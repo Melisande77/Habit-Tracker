@@ -168,16 +168,18 @@
             text-align: center;
         }
         
-        .reset-info {
-            background: #fef5e7;
-            border: 1px solid #f6e05e;
-            color: #744210;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-top: 10px;
-            text-align: center;
+        .debug-panel { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin-bottom: 15px; 
+            font-size: 11px;
+            font-family: monospace;
         }
+        .debug-panel h4 { margin-bottom: 5px; font-size: 12px; color: #856404; }
+        .debug-item { margin-bottom: 3px; }
+        .debug-key { color: #d63384; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -189,6 +191,11 @@
                 <button class="nav-btn active" onclick="showPage('today')">Today</button>
                 <button class="nav-btn" onclick="showPage('week')">Full Week</button>
             </div>
+        </div>
+
+        <div class="debug-panel" id="debug-panel">
+            <h4>🔧 Debug Info</h4>
+            <div id="debug-content">Loading...</div>
         </div>
 
         <div class="status-bar" id="status-bar">Starting up...</div>
@@ -328,10 +335,15 @@
             return days[dayIndex];
         }
 
-        // Simple storage - just save checked items for current week
+        // Much more robust storage with debugging
         function saveProgress() {
             try {
-                const data = {};
+                const data = {
+                    timestamp: Date.now(),
+                    saved_date: new Date().toISOString(),
+                    day_name: currentDayName,
+                    week_key: currentWeekKey
+                };
                 
                 // Save all checked checkboxes
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
@@ -349,19 +361,55 @@
                     }
                 });
                 
-                localStorage.setItem(`power_habits_${currentWeekKey}`, JSON.stringify(data));
-                updateStatus(`✅ Saved at ${new Date().toLocaleTimeString()}`);
+                const storageKey = `power_habits_${currentWeekKey}`;
+                const jsonData = JSON.stringify(data);
+                
+                // Try multiple storage methods
+                localStorage.setItem(storageKey, jsonData);
+                
+                // Also save a backup with current date
+                const backupKey = `power_habits_backup_${new Date().toISOString().split('T')[0]}`;
+                localStorage.setItem(backupKey, jsonData);
+                
+                updateDebugInfo();
+                updateStatus(`✅ Saved ${Object.keys(data).length} items at ${new Date().toLocaleTimeString()}`);
+                
+                return true;
             } catch (e) {
                 updateStatus(`❌ Save failed: ${e.message}`);
+                return false;
             }
         }
 
         function loadProgress() {
             try {
-                const saved = localStorage.getItem(`power_habits_${currentWeekKey}`);
+                const storageKey = `power_habits_${currentWeekKey}`;
+                let saved = localStorage.getItem(storageKey);
+                
+                // If main storage is empty, try backup from today
                 if (!saved) {
-                    updateStatus('✨ Fresh week started!');
-                    return;
+                    const backupKey = `power_habits_backup_${new Date().toISOString().split('T')[0]}`;
+                    saved = localStorage.getItem(backupKey);
+                    if (saved) {
+                        updateStatus('📂 Loaded from backup storage');
+                    }
+                }
+                
+                // Try yesterday's backup if still nothing
+                if (!saved) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayKey = `power_habits_backup_${yesterday.toISOString().split('T')[0]}`;
+                    saved = localStorage.getItem(yesterdayKey);
+                    if (saved) {
+                        updateStatus('📂 Loaded from yesterday backup');
+                    }
+                }
+                
+                if (!saved) {
+                    updateStatus('✨ No saved data found - fresh start!');
+                    updateDebugInfo();
+                    return false;
                 }
                 
                 const data = JSON.parse(saved);
@@ -381,9 +429,61 @@
                 });
                 
                 updateProgress();
-                updateStatus(`📂 Loaded ${loaded} completed items`);
+                updateDebugInfo();
+                updateStatus(`📂 Loaded ${loaded} items from ${data.saved_date || 'unknown time'}`);
+                return true;
             } catch (e) {
                 updateStatus(`❌ Load failed: ${e.message}`);
+                updateDebugInfo();
+                return false;
+            }
+        }
+
+        function updateDebugInfo() {
+            try {
+                const debugDiv = document.getElementById('debug-content');
+                if (!debugDiv) return;
+                
+                const now = new Date();
+                const storageKey = `power_habits_${currentWeekKey}`;
+                const stored = localStorage.getItem(storageKey);
+                
+                let html = `
+                    <div class="debug-item">📅 <span class="debug-key">Today:</span> ${now.toDateString()}</div>
+                    <div class="debug-item">🗓️ <span class="debug-key">Current Day:</span> ${currentDayName}</div>
+                    <div class="debug-item">🔑 <span class="debug-key">Week Key:</span> ${currentWeekKey}</div>
+                    <div class="debug-item">💾 <span class="debug-key">Storage Key:</span> ${storageKey}</div>
+                    <div class="debug-item">📦 <span class="debug-key">Data Exists:</span> ${stored ? 'YES' : 'NO'}</div>
+                `;
+                
+                if (stored) {
+                    try {
+                        const data = JSON.parse(stored);
+                        const checkedCount = Object.keys(data).filter(k => k.startsWith('ex_') || k.startsWith('meal_') || k.startsWith('care_') || k.startsWith('opt_')).length;
+                        html += `<div class="debug-item">✅ <span class="debug-key">Saved Items:</span> ${checkedCount}</div>`;
+                        html += `<div class="debug-item">⏰ <span class="debug-key">Last Saved:</span> ${data.saved_date || 'unknown'}</div>`;
+                    } catch (e) {
+                        html += `<div class="debug-item">❌ <span class="debug-key">Data Error:</span> ${e.message}</div>`;
+                    }
+                }
+                
+                // Show all available storage keys
+                const allKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('power_habits')) {
+                        allKeys.push(key);
+                    }
+                }
+                
+                html += `<div class="debug-item">🗂️ <span class="debug-key">All Storage:</span> ${allKeys.length} keys</div>`;
+                allKeys.forEach(key => {
+                    html += `<div class="debug-item" style="margin-left: 10px;">📄 ${key}</div>`;
+                });
+                
+                debugDiv.innerHTML = html;
+            } catch (e) {
+                console.error('Debug update failed:', e);
             }
         }
 
@@ -683,23 +783,32 @@
             }, 50);
         }
 
-        // Initialize everything
+        // Initialize everything with better debugging
         document.addEventListener('DOMContentLoaded', function() {
             currentWeekKey = getCurrentWeekKey();
             currentDayName = getCurrentDayName();
             
             updateWeekInfo();
+            updateDebugInfo();
             createTodayPage();
             createWeekPage();
             
             setTimeout(() => {
                 loadProgress();
-            }, 100);
+            }, 200);
         });
 
-        // Auto-save when page closes
+        // Save more frequently and on more events
         window.addEventListener('beforeunload', saveProgress);
         window.addEventListener('pagehide', saveProgress);
+        window.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                saveProgress();
+            }
+        });
+        
+        // Auto-save every 30 seconds
+        setInterval(saveProgress, 30000);
     </script>
 </body>
 </html>
