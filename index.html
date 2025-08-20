@@ -6,192 +6,256 @@
     <title>Power Habits</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #f0f4f8; 
+            line-height: 1.4;
+            -webkit-text-size-adjust: 100%;
+        }
+        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
         
-        .header { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header h1 { color: #2d3748; margin-bottom: 10px; }
+        .header { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            text-align: center;
+        }
+        .header h1 { color: #2d3748; margin-bottom: 8px; font-size: 28px; }
+        .header .week-info { color: #718096; font-size: 14px; margin-bottom: 15px; }
         
-        .nav { display: flex; gap: 5px; margin-top: 15px; flex-wrap: wrap; }
-        .nav-btn { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; font-size: 14px; flex: 1; min-width: 70px; }
+        .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .nav-btn { 
+            padding: 12px 8px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 500; 
+            transition: all 0.2s; 
+            font-size: 14px;
+            text-align: center;
+        }
         .nav-btn.active { background: #4299e1; color: white; }
         .nav-btn:not(.active) { background: #edf2f7; color: #4a5568; }
-        .nav-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.12); }
         
         .page { display: none; }
         .page.active { display: block; }
         
-        .progress-card { background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin: 20px 0; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #48bb78, #4299e1); transition: width 0.3s ease; }
-        .stats { display: flex; justify-content: space-around; margin-top: 20px; }
+        .progress-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .progress-bar { 
+            width: 100%; 
+            height: 8px; 
+            background: #e2e8f0; 
+            border-radius: 4px; 
+            margin: 15px 0; 
+            overflow: hidden; 
+        }
+        .progress-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #48bb78, #4299e1); 
+            transition: width 0.3s ease; 
+        }
+        .stats { 
+            display: flex; 
+            justify-content: space-around; 
+            margin-top: 15px; 
+        }
         .stat { text-align: center; }
-        .stat-number { font-size: 28px; font-weight: bold; color: #2d3748; }
-        .stat-label { font-size: 14px; color: #718096; margin-top: 4px; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #2d3748; }
+        .stat-label { font-size: 12px; color: #718096; margin-top: 4px; }
         
-        .day-card { background: white; margin-bottom: 20px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .day-header { padding: 16px 20px; font-weight: 600; color: white; font-size: 18px; }
-        .day-content { padding: 20px; }
+        .day-card { 
+            background: white; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .day-header { 
+            padding: 12px 16px; 
+            font-weight: 600; 
+            color: white; 
+            font-size: 16px; 
+        }
+        .day-content { padding: 16px; }
         
         .exercise-header { background: #4299e1; }
         .nutrition-header { background: #48bb78; }
         .meditation-header { background: #9f7aea; }
         .selfcare-header { background: #ed8936; }
-        .weekend-header { background: #f56565; }
         
-        .section { margin-bottom: 25px; }
-        .section h4 { color: #2d3748; margin-bottom: 12px; font-weight: 600; }
+        .section { margin-bottom: 20px; }
+        .section h4 { 
+            color: #2d3748; 
+            margin-bottom: 10px; 
+            font-weight: 600; 
+            font-size: 14px;
+        }
         
-        .item { display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #f7fafc; border-radius: 8px; transition: all 0.2s; }
+        .item { 
+            display: flex; 
+            align-items: flex-start; 
+            padding: 10px; 
+            margin-bottom: 6px; 
+            background: #f7fafc; 
+            border-radius: 8px; 
+            transition: all 0.2s; 
+        }
         .item:hover { background: #edf2f7; }
-        .item.completed { background: #f0fff4; text-decoration: line-through; color: #68d391; }
-        .item input[type="checkbox"] { margin-right: 12px; width: 18px; height: 18px; cursor: pointer; }
+        .item.completed { 
+            background: #f0fff4; 
+            text-decoration: line-through; 
+            color: #68d391; 
+        }
+        .item input[type="checkbox"] { 
+            margin-right: 10px; 
+            width: 16px; 
+            height: 16px; 
+            cursor: pointer; 
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .item-text { font-size: 14px; line-height: 1.4; }
         
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .metric input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; }
-        .metric label { display: block; margin-bottom: 6px; font-size: 12px; color: #718096; font-weight: 500; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-size: 12px; 
+            color: #718096; 
+            font-weight: 500; 
+        }
+        .input-group input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 6px; 
+            font-size: 14px;
+        }
         
-        .meditation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .meditation-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+        }
         .meditation-item { text-align: center; }
-        .meditation-item input { width: 80px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; text-align: center; margin: 0 8px; }
+        .meditation-item h4 { font-size: 14px; margin-bottom: 8px; }
+        .meditation-item input { 
+            width: 70px; 
+            padding: 8px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-size: 14px;
+        }
         
-        .emoji { font-size: 16px; margin-right: 8px; }
+        .status-bar { 
+            background: white; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            font-size: 12px;
+            color: #718096;
+            text-align: center;
+        }
         
-        .data-controls { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .data-controls button { padding: 8px 16px; margin: 0 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        .export-btn { background: #4299e1; color: white; }
-        .import-btn { background: #48bb78; color: white; }
-        .clear-btn { background: #f56565; color: white; }
-        .test-btn { background: #9f7aea; color: white; }
-        .data-controls input[type="file"] { margin: 0 10px; }
-        
-        .debug-info { background: #f7fafc; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; margin-top: 10px; }
+        .reset-info {
+            background: #fef5e7;
+            border: 1px solid #f6e05e;
+            color: #744210;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Power Habits</h1>
-            <p>Simple tracking for exercise, nutrition, meditation, and self-care</p>
+            <div class="week-info" id="week-info">Loading...</div>
             <div class="nav">
-                <button class="nav-btn active" onclick="showPage('exercise')">Exercise</button>
-                <button class="nav-btn" onclick="showPage('nutrition')">Nutrition</button>
-                <button class="nav-btn" onclick="showPage('meditation')">Meditation</button>
-                <button class="nav-btn" onclick="showPage('selfcare')">Self Care</button>
+                <button class="nav-btn active" onclick="showPage('today')">Today</button>
+                <button class="nav-btn" onclick="showPage('week')">Full Week</button>
             </div>
         </div>
 
-        <div class="data-controls">
-            <button class="export-btn" onclick="exportData()">📥 Export</button>
-            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData()">
-            <button class="import-btn" onclick="document.getElementById('importFile').click()">📤 Import</button>
-            <button class="clear-btn" onclick="clearAllData()">🗑️ Clear</button>
-            <button class="test-btn" onclick="testStorage()">🔧 Test</button>
-            <div class="debug-info" id="debug-info">Loading...</div>
-        </div>
+        <div class="status-bar" id="status-bar">Starting up...</div>
 
-        <!-- Exercise Page -->
-        <div id="exercise" class="page active">
+        <!-- Today's Focus Page -->
+        <div id="today" class="page active">
             <div class="progress-card">
-                <h2>Weekly Exercise Progress</h2>
+                <h2 id="today-title">Today's Progress</h2>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="exercise-progress" style="width: 0%"></div>
+                    <div class="progress-fill" id="today-progress" style="width: 0%"></div>
                 </div>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-number" id="exercise-completed">0</div>
+                        <div class="stat-number" id="today-completed">0</div>
                         <div class="stat-label">Completed</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number" id="exercise-total">0</div>
-                        <div class="stat-label">Total</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" id="exercise-calories">0</div>
-                        <div class="stat-label">Est. Calories</div>
-                    </div>
-                </div>
-            </div>
-            <div id="exercise-days"></div>
-        </div>
-
-        <!-- Nutrition Page -->
-        <div id="nutrition" class="page">
-            <div class="progress-card">
-                <h2>Weekly Nutrition Progress</h2>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="nutrition-progress" style="width: 0%"></div>
-                </div>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-number" id="nutrition-completed">0</div>
-                        <div class="stat-label">Completed</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" id="nutrition-total">0</div>
+                        <div class="stat-number" id="today-total">0</div>
                         <div class="stat-label">Total</div>
                     </div>
                 </div>
             </div>
-            <div id="nutrition-days"></div>
+            <div id="today-content"></div>
         </div>
 
-        <!-- Meditation Page -->
-        <div id="meditation" class="page">
+        <!-- Full Week Page -->
+        <div id="week" class="page">
             <div class="progress-card">
-                <h2>Weekly Meditation Progress</h2>
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-number" id="total-minutes">0</div>
-                        <div class="stat-label">Total Minutes</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" id="sessions-logged">0</div>
-                        <div class="stat-label">Sessions</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-number" id="avg-session">0</div>
-                        <div class="stat-label">Avg Minutes</div>
-                    </div>
-                </div>
-            </div>
-            <div id="meditation-days"></div>
-        </div>
-
-        <!-- Self Care Page -->
-        <div id="selfcare" class="page">
-            <div class="progress-card">
-                <h2>Weekly Self Care Progress</h2>
+                <h2>Week Progress</h2>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="selfcare-progress" style="width: 0%"></div>
+                    <div class="progress-fill" id="week-progress" style="width: 0%"></div>
                 </div>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-number" id="selfcare-completed">0</div>
+                        <div class="stat-number" id="week-completed">0</div>
                         <div class="stat-label">Completed</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number" id="selfcare-total">0</div>
+                        <div class="stat-number" id="week-total">0</div>
                         <div class="stat-label">Total</div>
                     </div>
                 </div>
             </div>
-            <div id="selfcare-days"></div>
+            <div id="week-content"></div>
+            
+            <div class="reset-info">
+                📅 Progress automatically resets every Monday at midnight
+            </div>
         </div>
     </div>
 
     <script>
+        // Simple week-based tracking
+        let currentWeekKey = '';
+        let currentDayName = '';
+        
         const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         
         const workouts = {
-            'Monday': { name: 'Back-Gym', calories: 120, exercises: ['30/side Bicycles', 'Chin-ups - 18', 'Chin-ups - 16', 'Knee tucks - 30', 'Shoulder blade - 20 lb', 'Bicep - 20 curls - 7.5lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
-            'Tuesday': { name: 'Core', calories: 110, exercises: ['Sprint', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Side plank - 30 sec', 'On side lift leg - 20'] },
-            'Wednesday': { name: 'Butt', calories: 125, exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20'] },
-            'Thursday': { name: 'Chest-Gym', calories: 130, exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15'] },
-            'Friday': { name: 'Shoulders-Gym', calories: 140, exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Leg lifts - 15'] }
+            'Monday': { name: 'Back-Gym', exercises: ['30/side Bicycles', 'Chin-ups - 18', 'Chin-ups - 16', 'Knee tucks - 30', 'Shoulder blade - 20 lb', 'Bicep - 20 curls - 7.5lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
+            'Tuesday': { name: 'Core', exercises: ['Sprint', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Side plank - 30 sec', 'On side lift leg - 20'] },
+            'Wednesday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20'] },
+            'Thursday': { name: 'Chest-Gym', exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15'] },
+            'Friday': { name: 'Shoulders-Gym', exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Leg lifts - 15'] },
+            'Saturday': { name: 'Active Recovery', exercises: ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'] },
+            'Sunday': { name: 'Rest Day', exercises: ['Gentle stretching', 'Walk', 'Light yoga'] }
         };
-        
-        const activities = ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'];
         
         const meals = [
             'Early morning coffee + heavy cream',
@@ -206,169 +270,110 @@
             'No food or water after 6pm'
         ];
         
-        const selfCareActivities = [
-            { category: 'morning', emoji: '🌅', items: ['Dry brush', 'Coconut swish with baking soda rinse', 'Breathing or Ohm\'s - 10 minutes'] },
-            { category: 'postworkout', emoji: '💪', items: ['Cold shower', 'Meditation'] },
-            { category: 'evening', emoji: '🌙', items: ['8pm turn off internet & cell phone', 'Take magnesium', 'Breathing or Ohm\'s - 10 minutes', 'Meditation', 'Brush Ceci\'s teeth', 'Read', 'Castor oil on belly button'] }
+        const selfCareItems = [
+            'Dry brush',
+            'Coconut swish with baking soda rinse', 
+            'Breathing or Ohm\'s - 10 minutes (morning)',
+            'Cold shower',
+            'Meditation (post-workout)',
+            '8pm turn off internet & cell phone',
+            'Take magnesium',
+            'Breathing or Ohm\'s - 10 minutes (evening)',
+            'Meditation (evening)',
+            'Brush Ceci\'s teeth',
+            'Read',
+            'Castor oil on belly button'
         ];
 
-        // COMPLETELY NEW APPROACH: Give each checkbox a unique data-id
-        let checkboxCounter = 0;
-        
-        function createUniqueCheckbox(text, page, day) {
-            const id = `${page}_${day}_${checkboxCounter++}_${text.substring(0, 10)}`;
-            return `<input type="checkbox" data-id="${id}" onchange="saveCheckbox(this)">`;
+        // Get current week key (Monday-based weeks)
+        function getCurrentWeekKey() {
+            const now = new Date();
+            const monday = new Date(now);
+            const day = now.getDay();
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+            monday.setDate(diff);
+            monday.setHours(0, 0, 0, 0);
+            return monday.toISOString().split('T')[0];
         }
 
-        // Super simple storage - just save which IDs are checked
-        function saveCheckbox(checkbox) {
+        function getCurrentDayName() {
+            const now = new Date();
+            const dayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1; // Convert Sunday=0 to be 6
+            return days[dayIndex];
+        }
+
+        // Simple storage - just save checked items for current week
+        function saveProgress() {
             try {
-                const checkedIds = JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]');
-                const id = checkbox.getAttribute('data-id');
+                const data = {};
                 
-                if (checkbox.checked) {
-                    if (!checkedIds.includes(id)) {
-                        checkedIds.push(id);
+                // Save all checked checkboxes
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    const id = checkbox.getAttribute('data-id');
+                    if (id && checkbox.checked) {
+                        data[id] = true;
                     }
-                } else {
-                    const index = checkedIds.indexOf(id);
-                    if (index > -1) {
-                        checkedIds.splice(index, 1);
-                    }
-                }
+                });
                 
-                localStorage.setItem('powerHabitsChecked', JSON.stringify(checkedIds));
-                updateDebugInfo(`✅ Saved ${checkedIds.length} checked items`);
-                updateProgress();
+                // Save all input values
+                document.querySelectorAll('input[type="number"]').forEach(input => {
+                    const id = input.getAttribute('data-id');
+                    if (id && input.value) {
+                        data[id] = input.value;
+                    }
+                });
+                
+                localStorage.setItem(`power_habits_${currentWeekKey}`, JSON.stringify(data));
+                updateStatus(`✅ Saved at ${new Date().toLocaleTimeString()}`);
             } catch (e) {
-                updateDebugInfo(`❌ Save failed: ${e.message}`);
+                updateStatus(`❌ Save failed: ${e.message}`);
             }
         }
 
-        function loadCheckboxes() {
+        function loadProgress() {
             try {
-                const checkedIds = JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]');
+                const saved = localStorage.getItem(`power_habits_${currentWeekKey}`);
+                if (!saved) {
+                    updateStatus('✨ Fresh week started!');
+                    return;
+                }
+                
+                const data = JSON.parse(saved);
                 let loaded = 0;
                 
-                document.querySelectorAll('input[type="checkbox"][data-id]').forEach(checkbox => {
-                    const id = checkbox.getAttribute('data-id');
-                    if (checkedIds.includes(id)) {
-                        checkbox.checked = true;
-                        loaded++;
+                // Restore checkboxes
+                Object.keys(data).forEach(id => {
+                    const element = document.querySelector(`[data-id="${id}"]`);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = true;
+                            loaded++;
+                        } else if (element.type === 'number') {
+                            element.value = data[id];
+                        }
                     }
                 });
                 
                 updateProgress();
-                updateDebugInfo(`✅ Loaded ${loaded} checked items from storage`);
+                updateStatus(`📂 Loaded ${loaded} completed items`);
             } catch (e) {
-                updateDebugInfo(`❌ Load failed: ${e.message}`);
+                updateStatus(`❌ Load failed: ${e.message}`);
             }
         }
 
-        // Simple number input storage
-        function saveInput(input) {
-            try {
-                const inputs = JSON.parse(localStorage.getItem('powerHabitsInputs') || '{}');
-                const id = input.getAttribute('data-id');
-                if (id) {
-                    inputs[id] = input.value;
-                    localStorage.setItem('powerHabitsInputs', JSON.stringify(inputs));
-                }
-            } catch (e) {
-                updateDebugInfo(`❌ Input save failed: ${e.message}`);
-            }
+        function updateStatus(message) {
+            document.getElementById('status-bar').textContent = message;
         }
 
-        function loadInputs() {
-            try {
-                const inputs = JSON.parse(localStorage.getItem('powerHabitsInputs') || '{}');
-                document.querySelectorAll('input[type="number"][data-id]').forEach(input => {
-                    const id = input.getAttribute('data-id');
-                    if (inputs[id]) {
-                        input.value = inputs[id];
-                    }
-                });
-                updateMeditation();
-            } catch (e) {
-                updateDebugInfo(`❌ Input load failed: ${e.message}`);
-            }
-        }
-
-        function updateDebugInfo(message) {
-            const debugEl = document.getElementById('debug-info');
-            if (debugEl) {
-                debugEl.textContent = message;
-            }
-            console.log('Power Habits:', message);
-        }
-
-        function testStorage() {
-            try {
-                const testData = 'test_' + Date.now();
-                localStorage.setItem('powerHabitsTest', testData);
-                const retrieved = localStorage.getItem('powerHabitsTest');
-                localStorage.removeItem('powerHabitsTest');
-                
-                if (retrieved === testData) {
-                    const checkedCount = JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]').length;
-                    updateDebugInfo(`✅ Storage working! ${checkedCount} items currently saved`);
-                } else {
-                    updateDebugInfo('❌ Storage test failed');
-                }
-            } catch (e) {
-                updateDebugInfo('❌ Storage not available: ' + e.message);
-            }
-        }
-
-        function exportData() {
-            try {
-                const data = {
-                    checked: JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]'),
-                    inputs: JSON.parse(localStorage.getItem('powerHabitsInputs') || '{}'),
-                    exported: new Date().toISOString()
-                };
-                
-                const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `power-habits-backup-${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                updateDebugInfo('✅ Data exported');
-            } catch (e) {
-                updateDebugInfo('❌ Export failed: ' + e.message);
-            }
-        }
-
-        function importData() {
-            const file = document.getElementById('importFile').files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        if (data.checked) localStorage.setItem('powerHabitsChecked', JSON.stringify(data.checked));
-                        if (data.inputs) localStorage.setItem('powerHabitsInputs', JSON.stringify(data.inputs));
-                        updateDebugInfo('✅ Data imported - reloading...');
-                        location.reload();
-                    } catch (error) {
-                        updateDebugInfo('❌ Import failed: Invalid file');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function clearAllData() {
-            if (confirm('Clear all data? This cannot be undone.')) {
-                localStorage.removeItem('powerHabitsChecked');
-                localStorage.removeItem('powerHabitsInputs');
-                updateDebugInfo('✅ All data cleared - reloading...');
-                location.reload();
-            }
+        function updateWeekInfo() {
+            const now = new Date();
+            const weekStart = new Date(currentWeekKey);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('week-info').textContent = 
+                `Week of ${formatDate(weekStart)} - ${formatDate(weekEnd)} • Today is ${currentDayName}`;
         }
 
         function showPage(pageId) {
@@ -378,126 +383,165 @@
             event.target.classList.add('active');
         }
 
-        function createExercisePage() {
-            const container = document.getElementById('exercise-days');
-            container.innerHTML = '';
+        function createTodayPage() {
+            const container = document.getElementById('today-content');
+            const workout = workouts[currentDayName];
+            
+            document.getElementById('today-title').textContent = `${currentDayName} • ${workout.name}`;
+            
+            let content = '';
+            
+            // Exercise section
+            if (workout.exercises.length > 0) {
+                content += `
+                    <div class="day-card">
+                        <div class="day-header exercise-header">💪 Exercise • ${workout.name}</div>
+                        <div class="day-content">
+                `;
+                
+                workout.exercises.forEach((exercise, i) => {
+                    content += `
+                        <div class="item">
+                            <input type="checkbox" data-id="ex_${currentDayName}_${i}" onchange="saveProgress()">
+                            <span class="item-text">${exercise}</span>
+                        </div>
+                    `;
+                });
+                
+                content += `
+                            <div class="input-group">
+                                <label>Steps Goal: 5,000</label>
+                                <input type="number" data-id="steps_${currentDayName}" placeholder="Enter steps" onchange="saveProgress()">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Nutrition section
+            content += `
+                <div class="day-card">
+                    <div class="day-header nutrition-header">🥗 Nutrition</div>
+                    <div class="day-content">
+                        <div class="input-group">
+                            <label>Blood Glucose (mg/dL)</label>
+                            <input type="number" data-id="glucose_${currentDayName}" step="0.1" onchange="saveProgress()">
+                        </div>
+                        <div class="input-group">
+                            <label>Ketones (mmol/L)</label>
+                            <input type="number" data-id="ketones_${currentDayName}" step="0.1" onchange="saveProgress()">
+                        </div>
+            `;
+            
+            meals.forEach((meal, i) => {
+                content += `
+                    <div class="item">
+                        <input type="checkbox" data-id="meal_${currentDayName}_${i}" onchange="saveProgress()">
+                        <span class="item-text">${meal}</span>
+                    </div>
+                `;
+            });
+            
+            content += `
+                    </div>
+                </div>
+            `;
+            
+            // Meditation section
+            content += `
+                <div class="day-card">
+                    <div class="day-header meditation-header">🧘 Meditation</div>
+                    <div class="day-content">
+                        <div class="meditation-grid">
+                            <div class="meditation-item">
+                                <h4>🌅 Morning</h4>
+                                <input type="number" data-id="med_morning_${currentDayName}" min="0" onchange="saveProgress()"> min
+                            </div>
+                            <div class="meditation-item">
+                                <h4>🌙 Evening</h4>
+                                <input type="number" data-id="med_evening_${currentDayName}" min="0" onchange="saveProgress()"> min
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Self Care section
+            content += `
+                <div class="day-card">
+                    <div class="day-header selfcare-header">💆 Self Care</div>
+                    <div class="day-content">
+            `;
+            
+            selfCareItems.forEach((item, i) => {
+                content += `
+                    <div class="item">
+                        <input type="checkbox" data-id="care_${currentDayName}_${i}" onchange="saveProgress()">
+                        <span class="item-text">${item}</span>
+                    </div>
+                `;
+            });
+            
+            content += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = content;
+        }
+
+        function createWeekPage() {
+            const container = document.getElementById('week-content');
+            let content = '';
             
             days.forEach(day => {
                 const workout = workouts[day];
-                const isWeekend = ['Saturday', 'Sunday'].includes(day);
+                const isToday = day === currentDayName;
                 
-                const dayCard = document.createElement('div');
-                dayCard.className = 'day-card';
-                
-                const header = `
-                    <div class="day-header ${isWeekend ? 'weekend-header' : 'exercise-header'}">
-                        ${day} ${workout ? `- ${workout.name} (${workout.calories} cal)` : '- Rest Day'}
-                    </div>
+                content += `
+                    <div class="day-card">
+                        <div class="day-header exercise-header">
+                            ${day} • ${workout.name} ${isToday ? '(Today)' : ''}
+                        </div>
+                        <div class="day-content">
+                            <div class="section">
+                                <h4>Exercise (${workout.exercises.length} items)</h4>
                 `;
                 
-                let content = '<div class="day-content">';
+                // Show first 3 exercises, then summary
+                workout.exercises.slice(0, 3).forEach((exercise, i) => {
+                    content += `
+                        <div class="item">
+                            <input type="checkbox" data-id="ex_${day}_${i}" onchange="saveProgress()">
+                            <span class="item-text">${exercise}</span>
+                        </div>
+                    `;
+                });
                 
-                if (workout) {
-                    content += '<div class="section"><h4>Workout Exercises</h4>';
-                    workout.exercises.forEach((exercise, i) => {
-                        content += `<div class="item">${createUniqueCheckbox(exercise, 'exercise', day)} ${exercise}</div>`;
-                    });
-                    content += '</div>';
+                if (workout.exercises.length > 3) {
+                    content += `<div style="color: #718096; font-size: 12px; padding: 5px 0;">+ ${workout.exercises.length - 3} more exercises</div>`;
                 }
                 
-                content += '<div class="section"><h4>Additional Activities</h4>';
-                activities.forEach((activity, i) => {
-                    content += `<div class="item">${createUniqueCheckbox(activity, 'exercise', day)} ${activity}</div>`;
-                });
-                content += '</div>';
-                
-                content += '<div class="section"><h4>Steps Goal: 5,000 steps (170 cal)</h4>';
-                content += `<input type="number" data-id="steps_${day}" placeholder="Enter steps" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;" onchange="saveInput(this)">`;
-                content += '</div></div>';
-                
-                dayCard.innerHTML = header + content;
-                container.appendChild(dayCard);
+                content += `
+                            </div>
+                            <div class="section">
+                                <h4>Quick Stats</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                                    <div>📊 Nutrition: <span id="nutrition_${day}_count">0</span>/${meals.length}</div>
+                                    <div>🧘 Self Care: <span id="care_${day}_count">0</span>/${selfCareItems.length}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
-        }
-
-        function createNutritionPage() {
-            const container = document.getElementById('nutrition-days');
-            container.innerHTML = '';
             
-            days.forEach(day => {
-                const dayCard = document.createElement('div');
-                dayCard.className = 'day-card';
-                
-                const header = `<div class="day-header nutrition-header">${day} - Nutrition & Meal Plan</div>`;
-                
-                let content = '<div class="day-content">';
-                content += '<div class="section"><h4>Daily Metrics (KetoMojo & CarbManager)</h4>';
-                content += '<div class="metrics">';
-                content += `<div class="metric"><label>Fasting Blood Glucose (mg/dL)</label><input type="number" data-id="glucose_${day}" step="0.1" placeholder="Glucose" onchange="saveInput(this)"></div>`;
-                content += `<div class="metric"><label>Ketones (mmol/L)</label><input type="number" data-id="ketones_${day}" step="0.1" placeholder="Ketones" onchange="saveInput(this)"></div>`;
-                content += `<div class="metric"><label>Total Calories</label><input type="number" data-id="calories_${day}" placeholder="Calories" onchange="saveInput(this)"></div>`;
-                content += `<div class="metric"><label>Net Carbs (grams)</label><input type="number" data-id="carbs_${day}" placeholder="Carbs" onchange="saveInput(this)"></div>`;
-                content += '</div></div>';
-                
-                content += '<div class="section"><h4>Daily Meal Plan</h4>';
-                meals.forEach(meal => {
-                    content += `<div class="item">${createUniqueCheckbox(meal, 'nutrition', day)} ${meal}</div>`;
-                });
-                content += '</div></div>';
-                
-                dayCard.innerHTML = header + content;
-                container.appendChild(dayCard);
-            });
-        }
-
-        function createMeditationPage() {
-            const container = document.getElementById('meditation-days');
-            container.innerHTML = '';
-            
-            days.forEach(day => {
-                const dayCard = document.createElement('div');
-                dayCard.className = 'day-card';
-                
-                const header = `<div class="day-header meditation-header">${day} - Meditation Practice</div>`;
-                
-                let content = '<div class="day-content">';
-                content += '<div class="meditation-grid">';
-                content += `<div class="meditation-item"><h4>🌅 Morning Meditation</h4><input type="number" data-id="morning_med_${day}" min="0" placeholder="Morning mins" onchange="saveInput(this); updateMeditation()"> minutes</div>`;
-                content += `<div class="meditation-item"><h4>🌙 Evening Meditation</h4><input type="number" data-id="evening_med_${day}" min="0" placeholder="Evening mins" onchange="saveInput(this); updateMeditation()"> minutes</div>`;
-                content += '</div></div>';
-                
-                dayCard.innerHTML = header + content;
-                container.appendChild(dayCard);
-            });
-        }
-
-        function createSelfCarePage() {
-            const container = document.getElementById('selfcare-days');
-            container.innerHTML = '';
-            
-            days.forEach(day => {
-                const dayCard = document.createElement('div');
-                dayCard.className = 'day-card';
-                
-                const header = `<div class="day-header selfcare-header">${day} - Self Care & Wellness</div>`;
-                
-                let content = '<div class="day-content">';
-                selfCareActivities.forEach(section => {
-                    content += `<div class="section"><h4><span class="emoji">${section.emoji}</span>${section.category === 'morning' ? 'Early Morning' : section.category === 'postworkout' ? 'After Workout' : 'Evening Routine'}</h4>`;
-                    section.items.forEach(item => {
-                        content += `<div class="item">${createUniqueCheckbox(item, 'selfcare', day)} ${item}</div>`;
-                    });
-                    content += '</div>';
-                });
-                content += '</div>';
-                
-                dayCard.innerHTML = header + content;
-                container.appendChild(dayCard);
-            });
+            container.innerHTML = content;
         }
 
         function updateProgress() {
             setTimeout(() => {
+                // Update visual states
                 document.querySelectorAll('.item').forEach(item => {
                     const checkbox = item.querySelector('input[type="checkbox"]');
                     if (checkbox && checkbox.checked) {
@@ -506,78 +550,61 @@
                         item.classList.remove('completed');
                     }
                 });
-
-                // Exercise progress
-                const exerciseChecks = document.querySelectorAll('#exercise input[type="checkbox"]');
-                const exerciseCompleted = Array.from(exerciseChecks).filter(cb => cb.checked).length;
-                const exerciseTotal = exerciseChecks.length;
-                const exercisePercent = exerciseTotal > 0 ? Math.round((exerciseCompleted / exerciseTotal) * 100) : 0;
                 
-                document.getElementById('exercise-progress').style.width = exercisePercent + '%';
-                document.getElementById('exercise-completed').textContent = exerciseCompleted;
-                document.getElementById('exercise-total').textContent = exerciseTotal;
-                document.getElementById('exercise-calories').textContent = exerciseCompleted * 20;
-
-                // Nutrition progress
-                const nutritionChecks = document.querySelectorAll('#nutrition input[type="checkbox"]');
-                const nutritionCompleted = Array.from(nutritionChecks).filter(cb => cb.checked).length;
-                const nutritionTotal = nutritionChecks.length;
-                const nutritionPercent = nutritionTotal > 0 ? Math.round((nutritionCompleted / nutritionTotal) * 100) : 0;
+                // Update today's progress
+                const todayChecks = document.querySelectorAll('#today input[type="checkbox"]');
+                const todayCompleted = Array.from(todayChecks).filter(cb => cb.checked).length;
+                const todayTotal = todayChecks.length;
+                const todayPercent = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
                 
-                document.getElementById('nutrition-progress').style.width = nutritionPercent + '%';
-                document.getElementById('nutrition-completed').textContent = nutritionCompleted;
-                document.getElementById('nutrition-total').textContent = nutritionTotal;
-
-                // Self care progress
-                const selfcareChecks = document.querySelectorAll('#selfcare input[type="checkbox"]');
-                const selfcareCompleted = Array.from(selfcareChecks).filter(cb => cb.checked).length;
-                const selfcareTotal = selfcareChecks.length;
-                const selfcarePercent = selfcareTotal > 0 ? Math.round((selfcareCompleted / selfcareTotal) * 100) : 0;
+                document.getElementById('today-progress').style.width = todayPercent + '%';
+                document.getElementById('today-completed').textContent = todayCompleted;
+                document.getElementById('today-total').textContent = todayTotal;
                 
-                document.getElementById('selfcare-progress').style.width = selfcarePercent + '%';
-                document.getElementById('selfcare-completed').textContent = selfcareCompleted;
-                document.getElementById('selfcare-total').textContent = selfcareTotal;
+                // Update week progress
+                const weekChecks = document.querySelectorAll('input[type="checkbox"]');
+                const weekCompleted = Array.from(weekChecks).filter(cb => cb.checked).length;
+                const weekTotal = weekChecks.length;
+                const weekPercent = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+                
+                document.getElementById('week-progress').style.width = weekPercent + '%';
+                document.getElementById('week-completed').textContent = weekCompleted;
+                document.getElementById('week-total').textContent = weekTotal;
+                
+                // Update day counts in week view
+                days.forEach(day => {
+                    const nutritionCount = document.querySelectorAll(`input[data-id^="meal_${day}"]`);
+                    const careCount = document.querySelectorAll(`input[data-id^="care_${day}"]`);
+                    
+                    const nutritionCompleted = Array.from(nutritionCount).filter(cb => cb.checked).length;
+                    const careCompleted = Array.from(careCount).filter(cb => cb.checked).length;
+                    
+                    const nutritionEl = document.getElementById(`nutrition_${day}_count`);
+                    const careEl = document.getElementById(`care_${day}_count`);
+                    
+                    if (nutritionEl) nutritionEl.textContent = nutritionCompleted;
+                    if (careEl) careEl.textContent = careCompleted;
+                });
             }, 50);
-        }
-
-        function updateMeditation() {
-            const inputs = document.querySelectorAll('#meditation input[type="number"]');
-            let total = 0;
-            let sessions = 0;
-            
-            inputs.forEach(input => {
-                const value = parseInt(input.value) || 0;
-                total += value;
-                if (value > 0) sessions++;
-            });
-            
-            document.getElementById('total-minutes').textContent = total;
-            document.getElementById('sessions-logged').textContent = sessions;
-            document.getElementById('avg-session').textContent = sessions > 0 ? Math.round(total / sessions) : 0;
         }
 
         // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
-            updateDebugInfo('🔧 Starting Power Habits...');
+            currentWeekKey = getCurrentWeekKey();
+            currentDayName = getCurrentDayName();
             
-            // Reset counter for consistent IDs
-            checkboxCounter = 0;
+            updateWeekInfo();
+            createTodayPage();
+            createWeekPage();
             
-            // Create all pages
-            createExercisePage();
-            createNutritionPage();
-            createMeditationPage();
-            createSelfCarePage();
-            
-            // Load saved data immediately after creation
             setTimeout(() => {
-                loadCheckboxes();
-                loadInputs();
-                testStorage();
+                loadProgress();
             }, 100);
         });
 
-        // Save on page close
-        window.addEventListener('beforeunload', function() {
-            updateDebugInfo('💾 Saving on exit...');
-        });
+        // Auto-save when page closes
+        window.addEventListener('beforeunload', saveProgress);
+        window.addEventListener('pagehide', saveProgress);
+    </script>
+</body>
+</html>
