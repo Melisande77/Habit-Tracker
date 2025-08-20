@@ -318,6 +318,9 @@
             return days[dayIndex];
         }
 
+        // Initialize storage
+        let weekData = {};
+
         // Simple storage - just save checked items for current week
         function saveProgress() {
             try {
@@ -340,7 +343,8 @@
                 });
                 
                 // Store data in memory for the week
-                window.weekData = data;
+                weekData = data;
+                updateProgress();
                 updateStatus(`✅ Saved at ${new Date().toLocaleTimeString()}`);
             } catch (e) {
                 updateStatus(`❌ Save failed: ${e.message}`);
@@ -349,24 +353,27 @@
 
         function loadProgress() {
             try {
-                const data = window.weekData || {};
                 let loaded = 0;
                 
-                // Restore checkboxes
-                Object.keys(data).forEach(id => {
+                // Restore checkboxes and inputs
+                Object.keys(weekData).forEach(id => {
                     const element = document.querySelector(`[data-id="${id}"]`);
                     if (element) {
                         if (element.type === 'checkbox') {
                             element.checked = true;
                             loaded++;
                         } else if (element.type === 'number') {
-                            element.value = data[id];
+                            element.value = weekData[id];
                         }
                     }
                 });
                 
                 updateProgress();
-                updateStatus(`📂 Loaded ${loaded} completed items`);
+                if (loaded > 0) {
+                    updateStatus(`📂 Loaded ${loaded} completed items`);
+                } else {
+                    updateStatus('✨ Fresh start - ready to track!');
+                }
             } catch (e) {
                 updateStatus(`❌ Load failed: ${e.message}`);
             }
