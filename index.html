@@ -212,138 +212,85 @@
             { category: 'evening', emoji: '🌙', items: ['8pm turn off internet & cell phone', 'Take magnesium', 'Breathing or Ohm\'s - 10 minutes', 'Meditation', 'Brush Ceci\'s teeth', 'Read', 'Castor oil on belly button'] }
         ];
 
-        // Simple and reliable data storage with better debugging
-        function saveData() {
+        // COMPLETELY NEW APPROACH: Give each checkbox a unique data-id
+        let checkboxCounter = 0;
+        
+        function createUniqueCheckbox(text, page, day) {
+            const id = `${page}_${day}_${checkboxCounter++}_${text.substring(0, 10)}`;
+            return `<input type="checkbox" data-id="${id}" onchange="saveCheckbox(this)">`;
+        }
+
+        // Super simple storage - just save which IDs are checked
+        function saveCheckbox(checkbox) {
             try {
-                const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
-                const allInputs = document.querySelectorAll('input[type="number"]');
+                const checkedIds = JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]');
+                const id = checkbox.getAttribute('data-id');
                 
-                const data = {
-                    version: '1.0',
-                    saved: new Date().toISOString(),
-                    checkboxes: [],
-                    inputs: []
-                };
+                if (checkbox.checked) {
+                    if (!checkedIds.includes(id)) {
+                        checkedIds.push(id);
+                    }
+                } else {
+                    const index = checkedIds.indexOf(id);
+                    if (index > -1) {
+                        checkedIds.splice(index, 1);
+                    }
+                }
                 
-                // Save all checkboxes with their text content and position info
-                allCheckboxes.forEach((checkbox, index) => {
-                    const item = checkbox.closest('.item');
-                    const dayCard = checkbox.closest('.day-card');
-                    const page = checkbox.closest('.page');
-                    
-                    const text = item ? item.textContent.trim() : '';
-                    const day = dayCard ? dayCard.querySelector('.day-header')?.textContent || '' : '';
-                    const pageId = page ? page.id : '';
-                    
-                    data.checkboxes.push({
-                        index: index,
-                        text: text,
-                        day: day,
-                        page: pageId,
-                        checked: checkbox.checked
-                    });
-                });
-                
-                // Save all number inputs
-                allInputs.forEach((input, index) => {
-                    const dayCard = input.closest('.day-card');
-                    const page = input.closest('.page');
-                    
-                    data.inputs.push({
-                        index: index,
-                        value: input.value,
-                        placeholder: input.placeholder,
-                        day: dayCard ? dayCard.querySelector('.day-header')?.textContent || '' : '',
-                        page: page ? page.id : ''
-                    });
-                });
-                
-                const jsonData = JSON.stringify(data);
-                localStorage.setItem('powerHabitsData', jsonData);
-                
-                updateDebugInfo(`✅ Saved ${data.checkboxes.length}/${allCheckboxes.length} checkboxes, ${data.inputs.length}/${allInputs.length} inputs at ${new Date().toLocaleTimeString()}`);
-                return true;
+                localStorage.setItem('powerHabitsChecked', JSON.stringify(checkedIds));
+                updateDebugInfo(`✅ Saved ${checkedIds.length} checked items`);
+                updateProgress();
             } catch (e) {
                 updateDebugInfo(`❌ Save failed: ${e.message}`);
-                return false;
             }
         }
 
-        function loadData() {
+        function loadCheckboxes() {
             try {
-                const saved = localStorage.getItem('powerHabitsData');
-                if (!saved) {
-                    updateDebugInfo('ℹ️ No saved data found');
-                    return false;
-                }
+                const checkedIds = JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]');
+                let loaded = 0;
                 
-                const data = JSON.parse(saved);
-                
-                // Validate data structure
-                if (!data || typeof data !== 'object') {
-                    updateDebugInfo('❌ Invalid data format - clearing corrupted data');
-                    localStorage.removeItem('powerHabitsData');
-                    return false;
-                }
-                
-                updateDebugInfo(`📂 Loading data from ${data.saved || 'unknown time'}`);
-                
-                // Ensure arrays exist
-                const checkboxes = Array.isArray(data.checkboxes) ? data.checkboxes : [];
-                const inputs = Array.isArray(data.inputs) ? data.inputs : [];
-                
-                const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
-                const allInputs = document.querySelectorAll('input[type="number"]');
-                
-                let restoredCheckboxes = 0;
-                let restoredInputs = 0;
-                
-                // Restore checkboxes with multiple matching strategies
-                checkboxes.forEach(savedCheckbox => {
-                    if (savedCheckbox && typeof savedCheckbox === 'object') {
-                        let found = false;
-                        
-                        // Strategy 1: Match by exact text content
-                        allCheckboxes.forEach((checkbox, index) => {
-                            if (!found) {
-                                const item = checkbox.closest('.item');
-                                const text = item ? item.textContent.trim() : '';
-                                if (text === savedCheckbox.text) {
-                                    checkbox.checked = savedCheckbox.checked;
-                                    found = true;
-                                    restoredCheckboxes++;
-                                }
-                            }
-                        });
-                        
-                        // Strategy 2: Match by index if text match failed
-                        if (!found && allCheckboxes[savedCheckbox.index]) {
-                            allCheckboxes[savedCheckbox.index].checked = savedCheckbox.checked;
-                            restoredCheckboxes++;
-                        }
+                document.querySelectorAll('input[type="checkbox"][data-id]').forEach(checkbox => {
+                    const id = checkbox.getAttribute('data-id');
+                    if (checkedIds.includes(id)) {
+                        checkbox.checked = true;
+                        loaded++;
                     }
                 });
                 
-                // Restore number inputs
-                inputs.forEach(savedInput => {
-                    if (savedInput && typeof savedInput === 'object') {
-                        if (allInputs[savedInput.index]) {
-                            allInputs[savedInput.index].value = savedInput.value || '';
-                            restoredInputs++;
-                        }
-                    }
-                });
-                
-                // Update visual states
                 updateProgress();
-                updateMeditation();
-                
-                updateDebugInfo(`✅ Restored ${restoredCheckboxes}/${allCheckboxes.length} checkboxes, ${restoredInputs}/${allInputs.length} inputs`);
-                return true;
+                updateDebugInfo(`✅ Loaded ${loaded} checked items from storage`);
             } catch (e) {
-                updateDebugInfo(`❌ Load failed: ${e.message} - clearing corrupted data`);
-                localStorage.removeItem('powerHabitsData');
-                return false;
+                updateDebugInfo(`❌ Load failed: ${e.message}`);
+            }
+        }
+
+        // Simple number input storage
+        function saveInput(input) {
+            try {
+                const inputs = JSON.parse(localStorage.getItem('powerHabitsInputs') || '{}');
+                const id = input.getAttribute('data-id');
+                if (id) {
+                    inputs[id] = input.value;
+                    localStorage.setItem('powerHabitsInputs', JSON.stringify(inputs));
+                }
+            } catch (e) {
+                updateDebugInfo(`❌ Input save failed: ${e.message}`);
+            }
+        }
+
+        function loadInputs() {
+            try {
+                const inputs = JSON.parse(localStorage.getItem('powerHabitsInputs') || '{}');
+                document.querySelectorAll('input[type="number"][data-id]').forEach(input => {
+                    const id = input.getAttribute('data-id');
+                    if (inputs[id]) {
+                        input.value = inputs[id];
+                    }
+                });
+                updateMeditation();
+            } catch (e) {
+                updateDebugInfo(`❌ Input load failed: ${e.message}`);
             }
         }
 
@@ -356,16 +303,17 @@
         }
 
         function testStorage() {
-            const testData = 'test_' + Date.now();
             try {
+                const testData = 'test_' + Date.now();
                 localStorage.setItem('powerHabitsTest', testData);
                 const retrieved = localStorage.getItem('powerHabitsTest');
                 localStorage.removeItem('powerHabitsTest');
                 
                 if (retrieved === testData) {
-                    updateDebugInfo('✅ Storage working! Current data size: ' + (localStorage.getItem('powerHabitsData')?.length || 0) + ' chars');
+                    const checkedCount = JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]').length;
+                    updateDebugInfo(`✅ Storage working! ${checkedCount} items currently saved`);
                 } else {
-                    updateDebugInfo('❌ Storage test failed - data mismatch');
+                    updateDebugInfo('❌ Storage test failed');
                 }
             } catch (e) {
                 updateDebugInfo('❌ Storage not available: ' + e.message);
@@ -374,21 +322,22 @@
 
         function exportData() {
             try {
-                const data = localStorage.getItem('powerHabitsData');
-                if (data) {
-                    const blob = new Blob([data], {type: 'application/json'});
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `power-habits-backup-${new Date().toISOString().split('T')[0]}.json`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                    updateDebugInfo('✅ Data exported successfully');
-                } else {
-                    updateDebugInfo('❌ No data to export');
-                }
+                const data = {
+                    checked: JSON.parse(localStorage.getItem('powerHabitsChecked') || '[]'),
+                    inputs: JSON.parse(localStorage.getItem('powerHabitsInputs') || '{}'),
+                    exported: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `power-habits-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateDebugInfo('✅ Data exported');
             } catch (e) {
                 updateDebugInfo('❌ Export failed: ' + e.message);
             }
@@ -401,11 +350,12 @@
                 reader.onload = function(e) {
                     try {
                         const data = JSON.parse(e.target.result);
-                        localStorage.setItem('powerHabitsData', JSON.stringify(data));
+                        if (data.checked) localStorage.setItem('powerHabitsChecked', JSON.stringify(data.checked));
+                        if (data.inputs) localStorage.setItem('powerHabitsInputs', JSON.stringify(data.inputs));
                         updateDebugInfo('✅ Data imported - reloading...');
                         location.reload();
                     } catch (error) {
-                        updateDebugInfo('❌ Import failed: Invalid file format');
+                        updateDebugInfo('❌ Import failed: Invalid file');
                     }
                 };
                 reader.readAsText(file);
@@ -414,13 +364,10 @@
 
         function clearAllData() {
             if (confirm('Clear all data? This cannot be undone.')) {
-                try {
-                    localStorage.removeItem('powerHabitsData');
-                    updateDebugInfo('✅ All data cleared - reloading...');
-                    setTimeout(() => location.reload(), 500);
-                } catch (e) {
-                    updateDebugInfo('❌ Clear failed: ' + e.message);
-                }
+                localStorage.removeItem('powerHabitsChecked');
+                localStorage.removeItem('powerHabitsInputs');
+                updateDebugInfo('✅ All data cleared - reloading...');
+                location.reload();
             }
         }
 
@@ -453,19 +400,19 @@
                 if (workout) {
                     content += '<div class="section"><h4>Workout Exercises</h4>';
                     workout.exercises.forEach((exercise, i) => {
-                        content += `<div class="item"><input type="checkbox" onchange="updateProgress(); saveData()"> ${exercise}</div>`;
+                        content += `<div class="item">${createUniqueCheckbox(exercise, 'exercise', day)} ${exercise}</div>`;
                     });
                     content += '</div>';
                 }
                 
                 content += '<div class="section"><h4>Additional Activities</h4>';
                 activities.forEach((activity, i) => {
-                    content += `<div class="item"><input type="checkbox" onchange="updateProgress(); saveData()"> ${activity}</div>`;
+                    content += `<div class="item">${createUniqueCheckbox(activity, 'exercise', day)} ${activity}</div>`;
                 });
                 content += '</div>';
                 
                 content += '<div class="section"><h4>Steps Goal: 5,000 steps (170 cal)</h4>';
-                content += '<input type="number" placeholder="Enter steps" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;" onchange="saveData()">';
+                content += `<input type="number" data-id="steps_${day}" placeholder="Enter steps" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;" onchange="saveInput(this)">`;
                 content += '</div></div>';
                 
                 dayCard.innerHTML = header + content;
@@ -486,15 +433,15 @@
                 let content = '<div class="day-content">';
                 content += '<div class="section"><h4>Daily Metrics (KetoMojo & CarbManager)</h4>';
                 content += '<div class="metrics">';
-                content += '<div class="metric"><label>Fasting Blood Glucose (mg/dL)</label><input type="number" step="0.1" placeholder="Glucose" onchange="saveData()"></div>';
-                content += '<div class="metric"><label>Ketones (mmol/L)</label><input type="number" step="0.1" placeholder="Ketones" onchange="saveData()"></div>';
-                content += '<div class="metric"><label>Total Calories</label><input type="number" placeholder="Calories" onchange="saveData()"></div>';
-                content += '<div class="metric"><label>Net Carbs (grams)</label><input type="number" placeholder="Carbs" onchange="saveData()"></div>';
+                content += `<div class="metric"><label>Fasting Blood Glucose (mg/dL)</label><input type="number" data-id="glucose_${day}" step="0.1" placeholder="Glucose" onchange="saveInput(this)"></div>`;
+                content += `<div class="metric"><label>Ketones (mmol/L)</label><input type="number" data-id="ketones_${day}" step="0.1" placeholder="Ketones" onchange="saveInput(this)"></div>`;
+                content += `<div class="metric"><label>Total Calories</label><input type="number" data-id="calories_${day}" placeholder="Calories" onchange="saveInput(this)"></div>`;
+                content += `<div class="metric"><label>Net Carbs (grams)</label><input type="number" data-id="carbs_${day}" placeholder="Carbs" onchange="saveInput(this)"></div>`;
                 content += '</div></div>';
                 
                 content += '<div class="section"><h4>Daily Meal Plan</h4>';
                 meals.forEach(meal => {
-                    content += `<div class="item"><input type="checkbox" onchange="updateProgress(); saveData()"> ${meal}</div>`;
+                    content += `<div class="item">${createUniqueCheckbox(meal, 'nutrition', day)} ${meal}</div>`;
                 });
                 content += '</div></div>';
                 
@@ -515,8 +462,8 @@
                 
                 let content = '<div class="day-content">';
                 content += '<div class="meditation-grid">';
-                content += '<div class="meditation-item"><h4>🌅 Morning Meditation</h4><input type="number" min="0" placeholder="Morning mins" onchange="updateMeditation(); saveData()"> minutes</div>';
-                content += '<div class="meditation-item"><h4>🌙 Evening Meditation</h4><input type="number" min="0" placeholder="Evening mins" onchange="updateMeditation(); saveData()"> minutes</div>';
+                content += `<div class="meditation-item"><h4>🌅 Morning Meditation</h4><input type="number" data-id="morning_med_${day}" min="0" placeholder="Morning mins" onchange="saveInput(this); updateMeditation()"> minutes</div>`;
+                content += `<div class="meditation-item"><h4>🌙 Evening Meditation</h4><input type="number" data-id="evening_med_${day}" min="0" placeholder="Evening mins" onchange="saveInput(this); updateMeditation()"> minutes</div>`;
                 content += '</div></div>';
                 
                 dayCard.innerHTML = header + content;
@@ -538,7 +485,7 @@
                 selfCareActivities.forEach(section => {
                     content += `<div class="section"><h4><span class="emoji">${section.emoji}</span>${section.category === 'morning' ? 'Early Morning' : section.category === 'postworkout' ? 'After Workout' : 'Evening Routine'}</h4>`;
                     section.items.forEach(item => {
-                        content += `<div class="item"><input type="checkbox" onchange="updateProgress(); saveData()"> ${item}</div>`;
+                        content += `<div class="item">${createUniqueCheckbox(item, 'selfcare', day)} ${item}</div>`;
                     });
                     content += '</div>';
                 });
@@ -609,32 +556,28 @@
             document.getElementById('avg-session').textContent = sessions > 0 ? Math.round(total / sessions) : 0;
         }
 
-        // Initialize everything with proper timing
+        // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
-            updateDebugInfo('🔧 Initializing Power Habits...');
+            updateDebugInfo('🔧 Starting Power Habits...');
             
-            // Create all pages first
+            // Reset counter for consistent IDs
+            checkboxCounter = 0;
+            
+            // Create all pages
             createExercisePage();
             createNutritionPage();
             createMeditationPage();
             createSelfCarePage();
             
-            // Test storage capability
-            testStorage();
-            
-            // Wait longer for DOM to be fully ready, then load data
+            // Load saved data immediately after creation
             setTimeout(() => {
-                const totalCheckboxes = document.querySelectorAll('input[type="checkbox"]').length;
-                const totalInputs = document.querySelectorAll('input[type="number"]').length;
-                updateDebugInfo(`🔍 Found ${totalCheckboxes} checkboxes, ${totalInputs} inputs`);
-                
-                loadData();
-            }, 500);
+                loadCheckboxes();
+                loadInputs();
+                testStorage();
+            }, 100);
         });
 
-        // Save on page unload
-        window.addEventListener('beforeunload', saveData);
-        window.addEventListener('pagehide', saveData);
-    </script>
-</body>
-</html>
+        // Save on page close
+        window.addEventListener('beforeunload', function() {
+            updateDebugInfo('💾 Saving on exit...');
+        });
