@@ -68,7 +68,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Weekly Habit Tracker</h1>
+            <h1>Power Habits</h1>
             <p>Simple tracking for exercise, nutrition, meditation, and self-care</p>
             <div class="nav">
                 <button class="nav-btn active" onclick="showPage('exercise')">Exercise</button>
@@ -229,7 +229,7 @@
             // Use a simple storage approach that works in all browsers
             try {
                 if (typeof(Storage) !== "undefined") {
-                    localStorage.setItem('habitTrackerData', JSON.stringify(data));
+                    localStorage.setItem('powerHabitsData', JSON.stringify(data));
                 }
             } catch (e) {
                 console.log('Storage not available, data will not persist');
@@ -270,13 +270,13 @@
 
         function exportData() {
             try {
-                const data = localStorage.getItem('habitTrackerData');
+                const data = localStorage.getItem('powerHabitsData');
                 if (data) {
                     const blob = new Blob([data], {type: 'application/json'});
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `habit-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+                    a.download = `power-habits-backup-${new Date().toISOString().split('T')[0]}.json`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -308,7 +308,7 @@
 
         function clearAllData() {
             if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-                localStorage.removeItem('habitTrackerData');
+                localStorage.removeItem('powerHabitsData');
                 location.reload();
             }
         }
