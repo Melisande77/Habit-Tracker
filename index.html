@@ -247,6 +247,16 @@
                         <div class="stat-label">Med (min)</div>
                     </div>
                 </div>
+                <div class="stats" style="margin-top: 10px;">
+                    <div class="stat">
+                        <div class="stat-number" id="week-calories">0</div>
+                        <div class="stat-label">Total Calories</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="week-carbs">0</div>
+                        <div class="stat-label">Total Carbs (g)</div>
+                    </div>
+                </div>
             </div>
             <div id="week-content"></div>
             
@@ -265,9 +275,9 @@
         
         const workouts = {
             'Monday': { name: 'Back-Gym', exercises: ['30/side Bicycles', 'Chin-ups - 18', 'Chin-ups - 16', 'Chin-ups - 16', 'Knee tucks - 30', 'Shoulder blade - 20 lb', 'Shoulder blade - 20 lb', 'Bicep - 20 curls - 7.5lb', 'Bicep - 20 curls - 7.5lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
-            'Tuesday': { name: 'Core', exercises: ['20 Pilates swimmer', '30/side Bicycles', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Plank - 45 sec', 'Side plank - 30 sec', 'Side plank - 30 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
+            'Tuesday': { name: 'Core', exercises: ['Sprint', '20 Pilates swimmer', '30/side Bicycles', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Plank - 45 sec', 'Side plank - 30 sec', 'Side plank - 30 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
             'Wednesday': { name: 'Chest-Gym', exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Incline pushups - 16', 'Incline pushups - 16', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
-            'Thursday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Fire Hydrant 1 min/ea', '30/side Bicycles', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
+            'Thursday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Fire Hydrant 1 min/ea', '30/side Bicycles', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
             'Friday': { name: 'Shoulders-Gym', exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Squat/Overhead - 11 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Hamstrings - 25', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
             'Saturday': { name: 'Active Recovery', exercises: ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'] },
             'Sunday': { name: 'Rest Day', exercises: ['Gentle stretching', 'Walk', 'Light yoga'] }
@@ -318,9 +328,6 @@
             return days[dayIndex];
         }
 
-        // Initialize storage
-        let weekData = {};
-
         // Simple storage - just save checked items for current week
         function saveProgress() {
             try {
@@ -342,9 +349,7 @@
                     }
                 });
                 
-                // Store data in memory for the week
-                weekData = data;
-                updateProgress();
+                localStorage.setItem(`power_habits_${currentWeekKey}`, JSON.stringify(data));
                 updateStatus(`✅ Saved at ${new Date().toLocaleTimeString()}`);
             } catch (e) {
                 updateStatus(`❌ Save failed: ${e.message}`);
@@ -353,27 +358,30 @@
 
         function loadProgress() {
             try {
+                const saved = localStorage.getItem(`power_habits_${currentWeekKey}`);
+                if (!saved) {
+                    updateStatus('✨ Fresh week started!');
+                    return;
+                }
+                
+                const data = JSON.parse(saved);
                 let loaded = 0;
                 
-                // Restore checkboxes and inputs
-                Object.keys(weekData).forEach(id => {
+                // Restore checkboxes
+                Object.keys(data).forEach(id => {
                     const element = document.querySelector(`[data-id="${id}"]`);
                     if (element) {
                         if (element.type === 'checkbox') {
                             element.checked = true;
                             loaded++;
                         } else if (element.type === 'number') {
-                            element.value = weekData[id];
+                            element.value = data[id];
                         }
                     }
                 });
                 
                 updateProgress();
-                if (loaded > 0) {
-                    updateStatus(`📂 Loaded ${loaded} completed items`);
-                } else {
-                    updateStatus('✨ Fresh start - ready to track!');
-                }
+                updateStatus(`📂 Loaded ${loaded} completed items`);
             } catch (e) {
                 updateStatus(`❌ Load failed: ${e.message}`);
             }
@@ -480,14 +488,15 @@
             });
             
             content += `
-                        <div class="input-group">
-                            <label>Total Calories</label>
-                            <input type="number" data-id="calories_${currentDayName}" placeholder="Enter total calories" onchange="saveProgress()">
-                        </div>
-                        <div class="input-group">
-                            <label>Net Carbs (g)</label>
-                            <input type="number" data-id="netcarbs_${currentDayName}" step="0.1" placeholder="Enter net carbs" onchange="saveProgress()">
-                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Total Calories</label>
+                        <input type="number" data-id="total_calories_${currentDayName}" placeholder="Enter total calories" onchange="saveProgress()">
+                    </div>
+                    <div class="input-group">
+                        <label>Total Net Carbs (grams)</label>
+                        <input type="number" data-id="total_carbs_${currentDayName}" placeholder="Enter net carbs" onchange="saveProgress()">
                     </div>
                 </div>
             `;
@@ -610,13 +619,11 @@
                 let weekNutritionCompleted = 0;
                 let weekSelfcareCompleted = 0;
                 let weekMeditationMinutes = 0;
+                let weekTotalCalories = 0;
+                let weekTotalCarbs = 0;
                 
-                // Calculate actual totals based on data structure
-                let weekExerciseTotal = 0;
-                days.forEach(day => {
-                    const workout = workouts[day];
-                    weekExerciseTotal += workout.exercises.length + 4; // +4 for optional activities
-                });
+                // Calculate actual totals based on updated data structure
+                const weekExerciseTotal = (14 + 4) + (17 + 4) + (16 + 4) + (14 + 4) + (15 + 4) + (4 + 4) + (3 + 4); // Each day's core exercises + 4 optional activities
                 const weekNutritionTotal = 7 * 10; // 7 days * 10 meals = 70 total  
                 const weekSelfcareTotal = 7 * 12; // 7 days * 12 self care items = 84 total
                 
@@ -642,6 +649,12 @@
                     const dayMeditation = (parseInt(dayMorningMed?.value || 0)) + (parseInt(dayEveningMed?.value || 0));
                     weekMeditationMinutes += dayMeditation;
                     
+                    // Total calories and carbs
+                    const dayCalories = document.querySelector(`input[data-id="total_calories_${day}"]`);
+                    const dayCarbs = document.querySelector(`input[data-id="total_carbs_${day}"]`);
+                    weekTotalCalories += parseInt(dayCalories?.value || 0);
+                    weekTotalCarbs += parseInt(dayCarbs?.value || 0);
+                    
                     // Update individual day summaries in week view
                     const exerciseSummary = document.getElementById(`exercise_${day}_summary`);
                     const nutritionSummary = document.getElementById(`nutrition_${day}_summary`);
@@ -665,6 +678,8 @@
                 document.getElementById('week-nutrition').textContent = `${weekNutritionCompleted}/${weekNutritionTotal}`;
                 document.getElementById('week-selfcare').textContent = `${weekSelfcareCompleted}/${weekSelfcareTotal}`;
                 document.getElementById('week-meditation').textContent = weekMeditationMinutes;
+                document.getElementById('week-calories').textContent = weekTotalCalories;
+                document.getElementById('week-carbs').textContent = weekTotalCarbs;
             }, 50);
         }
 
