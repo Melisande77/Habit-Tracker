@@ -202,12 +202,20 @@
                 </div>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-number" id="today-completed">0</div>
-                        <div class="stat-label">Completed</div>
+                        <div class="stat-number" id="today-exercise">0</div>
+                        <div class="stat-label">Exercise</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number" id="today-total">0</div>
-                        <div class="stat-label">Total</div>
+                        <div class="stat-number" id="today-nutrition">0</div>
+                        <div class="stat-label">Nutrition</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="today-selfcare">0</div>
+                        <div class="stat-label">Self Care</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="today-meditation">0</div>
+                        <div class="stat-label">Med (min)</div>
                     </div>
                 </div>
             </div>
@@ -223,12 +231,20 @@
                 </div>
                 <div class="stats">
                     <div class="stat">
-                        <div class="stat-number" id="week-completed">0</div>
-                        <div class="stat-label">Completed</div>
+                        <div class="stat-number" id="week-exercise">0</div>
+                        <div class="stat-label">Exercise</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number" id="week-total">0</div>
-                        <div class="stat-label">Total</div>
+                        <div class="stat-number" id="week-nutrition">0</div>
+                        <div class="stat-label">Nutrition</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="week-selfcare">0</div>
+                        <div class="stat-label">Self Care</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="week-meditation">0</div>
+                        <div class="stat-label">Med (min)</div>
                     </div>
                 </div>
             </div>
@@ -250,9 +266,9 @@
         const workouts = {
             'Monday': { name: 'Back-Gym', exercises: ['30/side Bicycles', 'Chin-ups - 18', 'Chin-ups - 16', 'Knee tucks - 30', 'Shoulder blade - 20 lb', 'Bicep - 20 curls - 7.5lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
             'Tuesday': { name: 'Core', exercises: ['Sprint', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Side plank - 30 sec', 'On side lift leg - 20'] },
-            'Wednesday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20'] },
-            'Thursday': { name: 'Chest-Gym', exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15'] },
-            'Friday': { name: 'Shoulders-Gym', exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Leg lifts - 15'] },
+            'Wednesday': { name: 'Chest-Gym', exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Incline pushups - 16', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
+            'Thursday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20'] },
+            'Friday': { name: 'Shoulders-Gym', exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
             'Saturday': { name: 'Active Recovery', exercises: ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'] },
             'Sunday': { name: 'Rest Day', exercises: ['Gentle stretching', 'Walk', 'Light yoga'] }
         };
@@ -323,7 +339,8 @@
                     }
                 });
                 
-                localStorage.setItem(`power_habits_${currentWeekKey}`, JSON.stringify(data));
+                // Store data in memory for the week
+                window.weekData = data;
                 updateStatus(`✅ Saved at ${new Date().toLocaleTimeString()}`);
             } catch (e) {
                 updateStatus(`❌ Save failed: ${e.message}`);
@@ -332,13 +349,7 @@
 
         function loadProgress() {
             try {
-                const saved = localStorage.getItem(`power_habits_${currentWeekKey}`);
-                if (!saved) {
-                    updateStatus('✨ Fresh week started!');
-                    return;
-                }
-                
-                const data = JSON.parse(saved);
+                const data = window.weekData || {};
                 let loaded = 0;
                 
                 // Restore checkboxes
@@ -397,6 +408,8 @@
                     <div class="day-card">
                         <div class="day-header exercise-header">💪 Exercise • ${workout.name}</div>
                         <div class="day-content">
+                            <div class="section">
+                                <h4>Core Workout</h4>
                 `;
                 
                 workout.exercises.forEach((exercise, i) => {
@@ -409,6 +422,23 @@
                 });
                 
                 content += `
+                            </div>
+                            <div class="section">
+                                <h4>Optional Activities</h4>
+                `;
+                
+                const optionalActivities = ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'];
+                optionalActivities.forEach((activity, i) => {
+                    content += `
+                        <div class="item">
+                            <input type="checkbox" data-id="opt_${currentDayName}_${i}" onchange="saveProgress()">
+                            <span class="item-text">${activity}</span>
+                        </div>
+                    `;
+                });
+                
+                content += `
+                            </div>
                             <div class="input-group">
                                 <label>Steps Goal: 5,000</label>
                                 <input type="number" data-id="steps_${currentDayName}" placeholder="Enter steps" onchange="saveProgress()">
@@ -443,6 +473,14 @@
             });
             
             content += `
+                        <div class="input-group">
+                            <label>Total Calories</label>
+                            <input type="number" data-id="calories_${currentDayName}" placeholder="Enter total calories" onchange="saveProgress()">
+                        </div>
+                        <div class="input-group">
+                            <label>Net Carbs (g)</label>
+                            <input type="number" data-id="netcarbs_${currentDayName}" step="0.1" placeholder="Enter net carbs" onchange="saveProgress()">
+                        </div>
                     </div>
                 </div>
             `;
@@ -497,6 +535,7 @@
             days.forEach(day => {
                 const workout = workouts[day];
                 const isToday = day === currentDayName;
+                const totalExerciseItems = workout.exercises.length + 4; // +4 for optional activities
                 
                 content += `
                     <div class="day-card">
@@ -505,30 +544,12 @@
                         </div>
                         <div class="day-content">
                             <div class="section">
-                                <h4>Exercise (${workout.exercises.length} items)</h4>
-                `;
-                
-                // Show first 3 exercises, then summary
-                workout.exercises.slice(0, 3).forEach((exercise, i) => {
-                    content += `
-                        <div class="item">
-                            <input type="checkbox" data-id="ex_${day}_${i}" onchange="saveProgress()">
-                            <span class="item-text">${exercise}</span>
-                        </div>
-                    `;
-                });
-                
-                if (workout.exercises.length > 3) {
-                    content += `<div style="color: #718096; font-size: 12px; padding: 5px 0;">+ ${workout.exercises.length - 3} more exercises</div>`;
-                }
-                
-                content += `
-                            </div>
-                            <div class="section">
                                 <h4>Quick Stats</h4>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-                                    <div>📊 Nutrition: <span id="nutrition_${day}_count">0</span>/${meals.length}</div>
-                                    <div>🧘 Self Care: <span id="care_${day}_count">0</span>/${selfCareItems.length}</div>
+                                    <div>💪 Exercise: <span id="exercise_${day}_summary">0</span>/${totalExerciseItems}</div>
+                                    <div>🥗 Nutrition: <span id="nutrition_${day}_summary">0</span>/${meals.length}</div>
+                                    <div>💆 Self Care: <span id="selfcare_${day}_summary">0</span>/${selfCareItems.length}</div>
+                                    <div>🧘 Meditation: <span id="meditation_${day}_summary">0</span> min</div>
                                 </div>
                             </div>
                         </div>
@@ -551,40 +572,92 @@
                     }
                 });
                 
-                // Update today's progress
-                const todayChecks = document.querySelectorAll('#today input[type="checkbox"]');
-                const todayCompleted = Array.from(todayChecks).filter(cb => cb.checked).length;
-                const todayTotal = todayChecks.length;
+                // Calculate today's stats
+                const todayExercise = document.querySelectorAll(`input[data-id^="ex_${currentDayName}"], input[data-id^="opt_${currentDayName}"]`);
+                const todayNutrition = document.querySelectorAll(`input[data-id^="meal_${currentDayName}"]`);
+                const todaySelfcare = document.querySelectorAll(`input[data-id^="care_${currentDayName}"]`);
+                
+                const todayExerciseCount = Array.from(todayExercise).filter(cb => cb.checked).length;
+                const todayNutritionCount = Array.from(todayNutrition).filter(cb => cb.checked).length;
+                const todaySelftareCount = Array.from(todaySelfcare).filter(cb => cb.checked).length;
+                
+                // Calculate today's meditation minutes
+                const morningMed = document.querySelector(`input[data-id="med_morning_${currentDayName}"]`);
+                const eveningMed = document.querySelector(`input[data-id="med_evening_${currentDayName}"]`);
+                const todayMeditationMinutes = (parseInt(morningMed?.value || 0)) + (parseInt(eveningMed?.value || 0));
+                
+                // Update today's progress bar (based on total completion)
+                const todayTotal = todayExercise.length + todayNutrition.length + todaySelfcare.length;
+                const todayCompleted = todayExerciseCount + todayNutritionCount + todaySelftareCount;
                 const todayPercent = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
-                
                 document.getElementById('today-progress').style.width = todayPercent + '%';
-                document.getElementById('today-completed').textContent = todayCompleted;
-                document.getElementById('today-total').textContent = todayTotal;
                 
-                // Update week progress
-                const weekChecks = document.querySelectorAll('input[type="checkbox"]');
-                const weekCompleted = Array.from(weekChecks).filter(cb => cb.checked).length;
-                const weekTotal = weekChecks.length;
-                const weekPercent = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+                // Update today's stats
+                document.getElementById('today-exercise').textContent = `${todayExerciseCount}/${todayExercise.length}`;
+                document.getElementById('today-nutrition').textContent = `${todayNutritionCount}/${todayNutrition.length}`;
+                document.getElementById('today-selfcare').textContent = `${todaySelftareCount}/${todaySelfcare.length}`;
+                document.getElementById('today-meditation').textContent = todayMeditationMinutes;
                 
-                document.getElementById('week-progress').style.width = weekPercent + '%';
-                document.getElementById('week-completed').textContent = weekCompleted;
-                document.getElementById('week-total').textContent = weekTotal;
+                // Calculate weekly stats with correct totals
+                let weekExerciseCompleted = 0;
+                let weekNutritionCompleted = 0;
+                let weekSelfcareCompleted = 0;
+                let weekMeditationMinutes = 0;
                 
-                // Update day counts in week view
+                // Calculate actual totals based on data structure
+                let weekExerciseTotal = 0;
                 days.forEach(day => {
-                    const nutritionCount = document.querySelectorAll(`input[data-id^="meal_${day}"]`);
-                    const careCount = document.querySelectorAll(`input[data-id^="care_${day}"]`);
-                    
-                    const nutritionCompleted = Array.from(nutritionCount).filter(cb => cb.checked).length;
-                    const careCompleted = Array.from(careCount).filter(cb => cb.checked).length;
-                    
-                    const nutritionEl = document.getElementById(`nutrition_${day}_count`);
-                    const careEl = document.getElementById(`care_${day}_count`);
-                    
-                    if (nutritionEl) nutritionEl.textContent = nutritionCompleted;
-                    if (careEl) careEl.textContent = careCompleted;
+                    const workout = workouts[day];
+                    weekExerciseTotal += workout.exercises.length + 4; // +4 for optional activities
                 });
+                const weekNutritionTotal = 7 * 10; // 7 days * 10 meals = 70 total  
+                const weekSelfcareTotal = 7 * 12; // 7 days * 12 self care items = 84 total
+                
+                days.forEach(day => {
+                    // Exercise counts (core + optional)
+                    const exerciseItems = document.querySelectorAll(`input[data-id^="ex_${day}"], input[data-id^="opt_${day}"]`);
+                    const exerciseCompleted = Array.from(exerciseItems).filter(cb => cb.checked).length;
+                    weekExerciseCompleted += exerciseCompleted;
+                    
+                    // Nutrition counts
+                    const nutritionItems = document.querySelectorAll(`input[data-id^="meal_${day}"]`);
+                    const nutritionCompleted = Array.from(nutritionItems).filter(cb => cb.checked).length;
+                    weekNutritionCompleted += nutritionCompleted;
+                    
+                    // Self care counts
+                    const selfcareItems = document.querySelectorAll(`input[data-id^="care_${day}"]`);
+                    const selfcareCompleted = Array.from(selfcareItems).filter(cb => cb.checked).length;
+                    weekSelfcareCompleted += selfcareCompleted;
+                    
+                    // Meditation minutes
+                    const dayMorningMed = document.querySelector(`input[data-id="med_morning_${day}"]`);
+                    const dayEveningMed = document.querySelector(`input[data-id="med_evening_${day}"]`);
+                    const dayMeditation = (parseInt(dayMorningMed?.value || 0)) + (parseInt(dayEveningMed?.value || 0));
+                    weekMeditationMinutes += dayMeditation;
+                    
+                    // Update individual day summaries in week view
+                    const exerciseSummary = document.getElementById(`exercise_${day}_summary`);
+                    const nutritionSummary = document.getElementById(`nutrition_${day}_summary`);
+                    const selfcareSummary = document.getElementById(`selfcare_${day}_summary`);
+                    const meditationSummary = document.getElementById(`meditation_${day}_summary`);
+                    
+                    if (exerciseSummary) exerciseSummary.textContent = exerciseCompleted;
+                    if (nutritionSummary) nutritionSummary.textContent = nutritionCompleted;
+                    if (selfcareSummary) selfcareSummary.textContent = selfcareCompleted;
+                    if (meditationSummary) meditationSummary.textContent = dayMeditation;
+                });
+                
+                // Update week progress bar (based on total completion)
+                const weekTotal = weekExerciseTotal + weekNutritionTotal + weekSelfcareTotal;
+                const weekCompleted = weekExerciseCompleted + weekNutritionCompleted + weekSelfcareCompleted;
+                const weekPercent = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+                document.getElementById('week-progress').style.width = weekPercent + '%';
+                
+                // Update weekly stats with correct totals
+                document.getElementById('week-exercise').textContent = `${weekExerciseCompleted}/${weekExerciseTotal}`;
+                document.getElementById('week-nutrition').textContent = `${weekNutritionCompleted}/${weekNutritionTotal}`;
+                document.getElementById('week-selfcare').textContent = `${weekSelfcareCompleted}/${weekSelfcareTotal}`;
+                document.getElementById('week-meditation').textContent = weekMeditationMinutes;
             }, 50);
         }
 
