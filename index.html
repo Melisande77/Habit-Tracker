@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -261,24 +262,40 @@
                 }
                 
                 const data = JSON.parse(saved);
-                updateDebugInfo(`📂 Loading data from ${data.saved}`);
+                
+                // Validate data structure
+                if (!data || typeof data !== 'object') {
+                    updateDebugInfo('❌ Invalid data format - clearing corrupted data');
+                    localStorage.removeItem('powerHabitsData');
+                    return false;
+                }
+                
+                updateDebugInfo(`📂 Loading data from ${data.saved || 'unknown time'}`);
+                
+                // Ensure arrays exist
+                const checkboxes = Array.isArray(data.checkboxes) ? data.checkboxes : [];
+                const inputs = Array.isArray(data.inputs) ? data.inputs : [];
                 
                 // Restore checkboxes by matching text content
-                data.checkboxes.forEach(savedCheckbox => {
-                    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                    checkboxes.forEach((checkbox, index) => {
-                        const text = checkbox.parentElement.textContent.trim();
-                        if (text === savedCheckbox.text || index === savedCheckbox.index) {
-                            checkbox.checked = savedCheckbox.checked;
-                        }
-                    });
+                checkboxes.forEach(savedCheckbox => {
+                    if (savedCheckbox && typeof savedCheckbox === 'object') {
+                        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+                        allCheckboxes.forEach((checkbox, index) => {
+                            const text = checkbox.parentElement.textContent.trim();
+                            if (text === savedCheckbox.text || index === savedCheckbox.index) {
+                                checkbox.checked = savedCheckbox.checked;
+                            }
+                        });
+                    }
                 });
                 
                 // Restore number inputs
-                data.inputs.forEach(savedInput => {
-                    const inputs = document.querySelectorAll('input[type="number"]');
-                    if (inputs[savedInput.index]) {
-                        inputs[savedInput.index].value = savedInput.value;
+                inputs.forEach(savedInput => {
+                    if (savedInput && typeof savedInput === 'object') {
+                        const allInputs = document.querySelectorAll('input[type="number"]');
+                        if (allInputs[savedInput.index]) {
+                            allInputs[savedInput.index].value = savedInput.value || '';
+                        }
                     }
                 });
                 
@@ -286,10 +303,11 @@
                 updateProgress();
                 updateMeditation();
                 
-                updateDebugInfo(`✅ Loaded ${data.checkboxes.length} checkboxes, ${data.inputs.length} inputs`);
+                updateDebugInfo(`✅ Loaded ${checkboxes.length} checkboxes, ${inputs.length} inputs`);
                 return true;
             } catch (e) {
-                updateDebugInfo(`❌ Load failed: ${e.message}`);
+                updateDebugInfo(`❌ Load failed: ${e.message} - clearing corrupted data`);
+                localStorage.removeItem('powerHabitsData');
                 return false;
             }
         }
@@ -361,9 +379,13 @@
 
         function clearAllData() {
             if (confirm('Clear all data? This cannot be undone.')) {
-                localStorage.removeItem('powerHabitsData');
-                updateDebugInfo('✅ All data cleared - reloading...');
-                location.reload();
+                try {
+                    localStorage.removeItem('powerHabitsData');
+                    updateDebugInfo('✅ All data cleared - reloading...');
+                    setTimeout(() => location.reload(), 500);
+                } catch (e) {
+                    updateDebugInfo('❌ Clear failed: ' + e.message);
+                }
             }
         }
 
