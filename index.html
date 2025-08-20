@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -213,9 +212,12 @@
             { category: 'evening', emoji: '🌙', items: ['8pm turn off internet & cell phone', 'Take magnesium', 'Breathing or Ohm\'s - 10 minutes', 'Meditation', 'Brush Ceci\'s teeth', 'Read', 'Castor oil on belly button'] }
         ];
 
-        // Simple and reliable data storage
+        // Simple and reliable data storage with better debugging
         function saveData() {
             try {
+                const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+                const allInputs = document.querySelectorAll('input[type="number"]');
+                
                 const data = {
                     version: '1.0',
                     saved: new Date().toISOString(),
@@ -223,29 +225,43 @@
                     inputs: []
                 };
                 
-                // Save all checkboxes with their text content
-                document.querySelectorAll('input[type="checkbox"]').forEach((checkbox, index) => {
-                    const text = checkbox.parentElement.textContent.trim();
+                // Save all checkboxes with their text content and position info
+                allCheckboxes.forEach((checkbox, index) => {
+                    const item = checkbox.closest('.item');
+                    const dayCard = checkbox.closest('.day-card');
+                    const page = checkbox.closest('.page');
+                    
+                    const text = item ? item.textContent.trim() : '';
+                    const day = dayCard ? dayCard.querySelector('.day-header')?.textContent || '' : '';
+                    const pageId = page ? page.id : '';
+                    
                     data.checkboxes.push({
                         index: index,
                         text: text,
+                        day: day,
+                        page: pageId,
                         checked: checkbox.checked
                     });
                 });
                 
                 // Save all number inputs
-                document.querySelectorAll('input[type="number"]').forEach((input, index) => {
+                allInputs.forEach((input, index) => {
+                    const dayCard = input.closest('.day-card');
+                    const page = input.closest('.page');
+                    
                     data.inputs.push({
                         index: index,
                         value: input.value,
-                        placeholder: input.placeholder
+                        placeholder: input.placeholder,
+                        day: dayCard ? dayCard.querySelector('.day-header')?.textContent || '' : '',
+                        page: page ? page.id : ''
                     });
                 });
                 
                 const jsonData = JSON.stringify(data);
                 localStorage.setItem('powerHabitsData', jsonData);
                 
-                updateDebugInfo(`✅ Saved ${data.checkboxes.length} checkboxes, ${data.inputs.length} inputs at ${new Date().toLocaleTimeString()}`);
+                updateDebugInfo(`✅ Saved ${data.checkboxes.length}/${allCheckboxes.length} checkboxes, ${data.inputs.length}/${allInputs.length} inputs at ${new Date().toLocaleTimeString()}`);
                 return true;
             } catch (e) {
                 updateDebugInfo(`❌ Save failed: ${e.message}`);
@@ -276,25 +292,44 @@
                 const checkboxes = Array.isArray(data.checkboxes) ? data.checkboxes : [];
                 const inputs = Array.isArray(data.inputs) ? data.inputs : [];
                 
-                // Restore checkboxes by matching text content
+                const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+                const allInputs = document.querySelectorAll('input[type="number"]');
+                
+                let restoredCheckboxes = 0;
+                let restoredInputs = 0;
+                
+                // Restore checkboxes with multiple matching strategies
                 checkboxes.forEach(savedCheckbox => {
                     if (savedCheckbox && typeof savedCheckbox === 'object') {
-                        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+                        let found = false;
+                        
+                        // Strategy 1: Match by exact text content
                         allCheckboxes.forEach((checkbox, index) => {
-                            const text = checkbox.parentElement.textContent.trim();
-                            if (text === savedCheckbox.text || index === savedCheckbox.index) {
-                                checkbox.checked = savedCheckbox.checked;
+                            if (!found) {
+                                const item = checkbox.closest('.item');
+                                const text = item ? item.textContent.trim() : '';
+                                if (text === savedCheckbox.text) {
+                                    checkbox.checked = savedCheckbox.checked;
+                                    found = true;
+                                    restoredCheckboxes++;
+                                }
                             }
                         });
+                        
+                        // Strategy 2: Match by index if text match failed
+                        if (!found && allCheckboxes[savedCheckbox.index]) {
+                            allCheckboxes[savedCheckbox.index].checked = savedCheckbox.checked;
+                            restoredCheckboxes++;
+                        }
                     }
                 });
                 
                 // Restore number inputs
                 inputs.forEach(savedInput => {
                     if (savedInput && typeof savedInput === 'object') {
-                        const allInputs = document.querySelectorAll('input[type="number"]');
                         if (allInputs[savedInput.index]) {
                             allInputs[savedInput.index].value = savedInput.value || '';
+                            restoredInputs++;
                         }
                     }
                 });
@@ -303,7 +338,7 @@
                 updateProgress();
                 updateMeditation();
                 
-                updateDebugInfo(`✅ Loaded ${checkboxes.length} checkboxes, ${inputs.length} inputs`);
+                updateDebugInfo(`✅ Restored ${restoredCheckboxes}/${allCheckboxes.length} checkboxes, ${restoredInputs}/${allInputs.length} inputs`);
                 return true;
             } catch (e) {
                 updateDebugInfo(`❌ Load failed: ${e.message} - clearing corrupted data`);
@@ -574,11 +609,11 @@
             document.getElementById('avg-session').textContent = sessions > 0 ? Math.round(total / sessions) : 0;
         }
 
-        // Initialize everything
+        // Initialize everything with proper timing
         document.addEventListener('DOMContentLoaded', function() {
             updateDebugInfo('🔧 Initializing Power Habits...');
             
-            // Create all pages
+            // Create all pages first
             createExercisePage();
             createNutritionPage();
             createMeditationPage();
@@ -587,10 +622,14 @@
             // Test storage capability
             testStorage();
             
-            // Load saved data
+            // Wait longer for DOM to be fully ready, then load data
             setTimeout(() => {
+                const totalCheckboxes = document.querySelectorAll('input[type="checkbox"]').length;
+                const totalInputs = document.querySelectorAll('input[type="number"]').length;
+                updateDebugInfo(`🔍 Found ${totalCheckboxes} checkboxes, ${totalInputs} inputs`);
+                
                 loadData();
-            }, 100);
+            }, 500);
         });
 
         // Save on page unload
