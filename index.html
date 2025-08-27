@@ -290,18 +290,71 @@
             'Sunday': { name: 'Rest Day', exercises: ['Gentle stretching', 'Walk', 'Light yoga'] }
         };
         
-        const meals = [
-            'Early morning coffee + heavy cream',
-            '24 oz salted water before workout', 
-            'After workout: Wait 20 min → 1-2 tsp ACV in water, wait 20 min',
-            'Breakfast: 1 cup bone broth before 2 eggs + greens',
-            'Mid morning: 16 oz salted water, wait 20 minutes',
-            'Mid-morning: Unsweetened matcha tea',
-            'Lunch: Bitters → sardines/salmon + capers, cooled starch, raw onions, cinnamon',
-            'Snack: Dandelion tea + turmeric/ginger tea before nuts',
-            'Dinner: Bitters before dinner',
-            'No food or water after 6pm'
-        ];
+        const meals = {
+            'Monday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth', 
+                '11:00 AM: 1 c bone broth → eggs + watercress, raw onion, lemon; 1 tbsp olive oil; 1 tbsp balsamic',
+                '12:00 PM: unsweetened matcha',
+                '1 PM: 1 oz nuts (pistachios ~160 kcal or macadamias ~200 kcal)',
+                '5 PM: Bitters → salmon 5 oz; 1/4 c cooked-and-cooled potato; greens in coconut curry (≤1/4 c coconut milk); garlic + capers',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ],
+            'Tuesday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth',
+                '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
+                '12:00 PM: unsweetened matcha',
+                '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
+                '5 PM: Bitters → sardines 1 can over bitter greens + capers, parsley, lemon; 1/2 avocado; no starch',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ],
+            'Wednesday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth',
+                '10:00: 1 c bone broth → 1 c homemade L. reuteri yogurt (heavy cream + whole milk) + 1/4 c blueberries',
+                '12:00 PM: unsweetened matcha',
+                '1 PM: 1 oz beef or fattier cheese (pick cheese for more calories without carbs)',
+                '5 PM: Bitters → 2 eggs + garlic-sautéed greens w/ seaweed/dulse; salad: greens + raw onion + 6 cherry tomatoes + parsley or capers; lemon; 1 tbsp olive oil',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ],
+            'Thursday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth',
+                '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
+                '12:00 PM: unsweetened matcha',
+                '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
+                '5 PM: Bitters → sardines 1 can over bitter greens + capers, parsley, lemon; 1/2 avocado; no starch',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ],
+            'Friday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth',
+                '11:00: 1 c bone broth → 3 eggs + watercress, raw onion, lemon; 1 tbsp olive oil; 1 tbsp balsamic',
+                '12:00 PM: unsweetened matcha',
+                '1 PM: 1 oz nuts (pistachios ~160 kcal or macadamias ~200 kcal)',
+                '5 PM: Bitters → salmon 5 oz; 1/4 c cooked-and-cooled potato; greens in coconut curry (≤1/4 c coconut milk); garlic + capers',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ],
+            'Saturday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth',
+                'Meal 1 per chosen day',
+                '12:00 PM: unsweetened matcha',
+                'Snack per chosen day (1 oz nuts for Day1/Day2; or 1 oz beef/cheese if you run Day3-style)',
+                'Meal 2 per chosen day',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ],
+            'Sunday': [
+                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+                '10:30: 1 t. ACV in water → brush teeth',
+                '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
+                '12:00 PM: unsweetened matcha',
+                '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
+                '5 PM: Bitters → fish with greens + capers, parsley, lemon; 1/2 avocado; no starch',
+                '7 PM: Ginger, turmeric, pepper tea'
+            ]
+        };
         
         const selfCareItems = [
             'Dry brush',
@@ -335,17 +388,22 @@
             return days[dayIndex];
         }
 
-        // Much more robust storage with debugging
+        // Ultra-robust storage with multiple fallbacks
         function saveProgress() {
             try {
+                const timestamp = Date.now();
+                const dateStr = new Date().toISOString().split('T')[0];
+                
                 const data = {
-                    timestamp: Date.now(),
+                    version: '2.0',
+                    timestamp: timestamp,
                     saved_date: new Date().toISOString(),
                     day_name: currentDayName,
-                    week_key: currentWeekKey
+                    week_key: currentWeekKey,
+                    raw_date: dateStr
                 };
                 
-                // Save all checked checkboxes
+                // Collect all form data
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                     const id = checkbox.getAttribute('data-id');
                     if (id && checkbox.checked) {
@@ -353,7 +411,6 @@
                     }
                 });
                 
-                // Save all input values
                 document.querySelectorAll('input[type="number"]').forEach(input => {
                     const id = input.getAttribute('data-id');
                     if (id && input.value) {
@@ -361,61 +418,94 @@
                     }
                 });
                 
-                const storageKey = `power_habits_${currentWeekKey}`;
                 const jsonData = JSON.stringify(data);
                 
-                // Try multiple storage methods
-                localStorage.setItem(storageKey, jsonData);
-                
-                // Also save a backup with current date
-                const backupKey = `power_habits_backup_${new Date().toISOString().split('T')[0]}`;
-                localStorage.setItem(backupKey, jsonData);
-                
-                updateDebugInfo();
-                updateStatus(`✅ Saved ${Object.keys(data).length} items at ${new Date().toLocaleTimeString()}`);
+                // Store in multiple ways to increase reliability
+                try {
+                    // Method 1: Weekly storage
+                    localStorage.setItem(`power_habits_${currentWeekKey}`, jsonData);
+                    
+                    // Method 2: Daily storage
+                    localStorage.setItem(`power_habits_daily_${dateStr}`, jsonData);
+                    
+                    // Method 3: Day-specific storage
+                    localStorage.setItem(`power_habits_${currentDayName}_${dateStr}`, jsonData);
+                    
+                    // Method 4: Latest storage (always overwrites)
+                    localStorage.setItem('power_habits_latest', jsonData);
+                    
+                    // Method 5: Session backup
+                    sessionStorage.setItem('power_habits_session', jsonData);
+                    
+                    updateDebugInfo();
+                    updateStatus(`✅ Saved ${Object.keys(data).length} items (5 methods) at ${new Date().toLocaleTimeString()}`);
+                    
+                } catch (storageError) {
+                    // If localStorage fails, try sessionStorage only
+                    sessionStorage.setItem('power_habits_emergency', jsonData);
+                    updateStatus(`⚠️ localStorage failed, using session storage: ${storageError.message}`);
+                }
                 
                 return true;
             } catch (e) {
-                updateStatus(`❌ Save failed: ${e.message}`);
+                updateStatus(`❌ Save completely failed: ${e.message}`);
                 return false;
             }
         }
 
         function loadProgress() {
             try {
-                const storageKey = `power_habits_${currentWeekKey}`;
-                let saved = localStorage.getItem(storageKey);
+                const dateStr = new Date().toISOString().split('T')[0];
+                let data = null;
+                let source = '';
                 
-                // If main storage is empty, try backup from today
-                if (!saved) {
-                    const backupKey = `power_habits_backup_${new Date().toISOString().split('T')[0]}`;
-                    saved = localStorage.getItem(backupKey);
-                    if (saved) {
-                        updateStatus('📂 Loaded from backup storage');
+                // Try loading in order of preference
+                const attempts = [
+                    { key: `power_habits_${currentWeekKey}`, name: 'weekly', storage: localStorage },
+                    { key: `power_habits_daily_${dateStr}`, name: 'daily', storage: localStorage },
+                    { key: `power_habits_${currentDayName}_${dateStr}`, name: 'day-specific', storage: localStorage },
+                    { key: 'power_habits_latest', name: 'latest', storage: localStorage },
+                    { key: 'power_habits_session', name: 'session', storage: sessionStorage },
+                    { key: 'power_habits_emergency', name: 'emergency', storage: sessionStorage }
+                ];
+                
+                // Try yesterday's data if today's doesn't exist
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                attempts.push(
+                    { key: `power_habits_daily_${yesterdayStr}`, name: 'yesterday', storage: localStorage }
+                );
+                
+                for (const attempt of attempts) {
+                    try {
+                        const saved = attempt.storage.getItem(attempt.key);
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            // Verify it's recent data (within last 7 days)
+                            const savedTime = new Date(parsed.saved_date || 0);
+                            const now = new Date();
+                            const daysDiff = (now - savedTime) / (1000 * 60 * 60 * 24);
+                            
+                            if (daysDiff <= 7) {
+                                data = parsed;
+                                source = attempt.name;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        continue; // Try next method
                     }
                 }
                 
-                // Try yesterday's backup if still nothing
-                if (!saved) {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayKey = `power_habits_backup_${yesterday.toISOString().split('T')[0]}`;
-                    saved = localStorage.getItem(yesterdayKey);
-                    if (saved) {
-                        updateStatus('📂 Loaded from yesterday backup');
-                    }
-                }
-                
-                if (!saved) {
-                    updateStatus('✨ No saved data found - fresh start!');
+                if (!data) {
+                    updateStatus('✨ No valid saved data found - fresh start!');
                     updateDebugInfo();
                     return false;
                 }
                 
-                const data = JSON.parse(saved);
+                // Restore the data
                 let loaded = 0;
-                
-                // Restore checkboxes
                 Object.keys(data).forEach(id => {
                     const element = document.querySelector(`[data-id="${id}"]`);
                     if (element) {
@@ -430,8 +520,9 @@
                 
                 updateProgress();
                 updateDebugInfo();
-                updateStatus(`📂 Loaded ${loaded} items from ${data.saved_date || 'unknown time'}`);
+                updateStatus(`📂 Loaded ${loaded} items from ${source} (saved: ${data.saved_date || 'unknown'})`);
                 return true;
+                
             } catch (e) {
                 updateStatus(`❌ Load failed: ${e.message}`);
                 updateDebugInfo();
@@ -445,41 +536,54 @@
                 if (!debugDiv) return;
                 
                 const now = new Date();
-                const storageKey = `power_habits_${currentWeekKey}`;
-                const stored = localStorage.getItem(storageKey);
+                const dateStr = now.toISOString().split('T')[0];
                 
                 let html = `
-                    <div class="debug-item">📅 <span class="debug-key">Today:</span> ${now.toDateString()}</div>
-                    <div class="debug-item">🗓️ <span class="debug-key">Current Day:</span> ${currentDayName}</div>
+                    <div class="debug-item">📅 <span class="debug-key">Date:</span> ${now.toDateString()}</div>
+                    <div class="debug-item">🗓️ <span class="debug-key">Day:</span> ${currentDayName}</div>
                     <div class="debug-item">🔑 <span class="debug-key">Week Key:</span> ${currentWeekKey}</div>
-                    <div class="debug-item">💾 <span class="debug-key">Storage Key:</span> ${storageKey}</div>
-                    <div class="debug-item">📦 <span class="debug-key">Data Exists:</span> ${stored ? 'YES' : 'NO'}</div>
                 `;
                 
-                if (stored) {
+                // Check all storage methods
+                const storageChecks = [
+                    { key: `power_habits_${currentWeekKey}`, name: 'Weekly', storage: localStorage },
+                    { key: `power_habits_daily_${dateStr}`, name: 'Daily', storage: localStorage },
+                    { key: `power_habits_${currentDayName}_${dateStr}`, name: 'Day-specific', storage: localStorage },
+                    { key: 'power_habits_latest', name: 'Latest', storage: localStorage },
+                    { key: 'power_habits_session', name: 'Session', storage: sessionStorage }
+                ];
+                
+                storageChecks.forEach(check => {
                     try {
-                        const data = JSON.parse(stored);
-                        const checkedCount = Object.keys(data).filter(k => k.startsWith('ex_') || k.startsWith('meal_') || k.startsWith('care_') || k.startsWith('opt_')).length;
-                        html += `<div class="debug-item">✅ <span class="debug-key">Saved Items:</span> ${checkedCount}</div>`;
-                        html += `<div class="debug-item">⏰ <span class="debug-key">Last Saved:</span> ${data.saved_date || 'unknown'}</div>`;
+                        const exists = check.storage.getItem(check.key);
+                        const status = exists ? '✅ YES' : '❌ NO';
+                        html += `<div class="debug-item">💾 <span class="debug-key">${check.name}:</span> ${status}</div>`;
+                        
+                        if (exists) {
+                            try {
+                                const data = JSON.parse(exists);
+                                const itemCount = Object.keys(data).filter(k => k.startsWith('ex_') || k.startsWith('meal_') || k.startsWith('care_') || k.startsWith('opt_')).length;
+                                html += `<div class="debug-item" style="margin-left: 15px;">📊 ${itemCount} items, saved: ${data.saved_date || 'unknown'}</div>`;
+                            } catch (e) {
+                                html += `<div class="debug-item" style="margin-left: 15px;">❌ Parse error</div>`;
+                            }
+                        }
                     } catch (e) {
-                        html += `<div class="debug-item">❌ <span class="debug-key">Data Error:</span> ${e.message}</div>`;
+                        html += `<div class="debug-item">💾 <span class="debug-key">${check.name}:</span> ❌ ERROR</div>`;
                     }
-                }
-                
-                // Show all available storage keys
-                const allKeys = [];
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key && key.startsWith('power_habits')) {
-                        allKeys.push(key);
-                    }
-                }
-                
-                html += `<div class="debug-item">🗂️ <span class="debug-key">All Storage:</span> ${allKeys.length} keys</div>`;
-                allKeys.forEach(key => {
-                    html += `<div class="debug-item" style="margin-left: 10px;">📄 ${key}</div>`;
                 });
+                
+                // Storage quota info
+                if (navigator.storage && navigator.storage.estimate) {
+                    navigator.storage.estimate().then(estimate => {
+                        const used = Math.round((estimate.usage || 0) / 1024);
+                        const quota = Math.round((estimate.quota || 0) / 1024 / 1024);
+                        const debugDiv = document.getElementById('debug-content');
+                        if (debugDiv) {
+                            debugDiv.innerHTML += `<div class="debug-item">💿 <span class="debug-key">Storage:</span> ${used}KB used of ${quota}MB</div>`;
+                        }
+                    });
+                }
                 
                 debugDiv.innerHTML = html;
             } catch (e) {
@@ -564,6 +668,7 @@
             }
             
             // Nutrition section
+            const dayMeals = meals[currentDayName] || [];
             content += `
                 <div class="day-card">
                     <div class="day-header nutrition-header">🥗 Nutrition</div>
@@ -578,7 +683,7 @@
                         </div>
             `;
             
-            meals.forEach((meal, i) => {
+            dayMeals.forEach((meal, i) => {
                 content += `
                     <div class="item">
                         <input type="checkbox" data-id="meal_${currentDayName}_${i}" onchange="saveProgress()">
@@ -663,7 +768,7 @@
                                 <h4>Quick Stats</h4>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
                                     <div>💪 Exercise: <span id="exercise_${day}_summary">0</span>/${totalExerciseItems}</div>
-                                    <div>🥗 Nutrition: <span id="nutrition_${day}_summary">0</span>/${meals.length}</div>
+                                    <div>🥗 Nutrition: <span id="nutrition_${day}_summary">0</span>/${meals[day] ? meals[day].length : 7}</div>
                                     <div>💆 Self Care: <span id="selfcare_${day}_summary">0</span>/${selfCareItems.length}</div>
                                     <div>🧘 Meditation: <span id="meditation_${day}_summary">0</span> min</div>
                                 </div>
@@ -724,7 +829,7 @@
                 
                 // Calculate actual totals based on updated data structure
                 const weekExerciseTotal = (14 + 4) + (17 + 4) + (16 + 4) + (14 + 4) + (15 + 4) + (4 + 4) + (3 + 4); // Each day's core exercises + 4 optional activities
-                const weekNutritionTotal = 7 * 10; // 7 days * 10 meals = 70 total  
+                const weekNutritionTotal = 7 + 7 + 7 + 7 + 7 + 7 + 7; // 7 nutrition items per day = 49 total
                 const weekSelfcareTotal = 7 * 12; // 7 days * 12 self care items = 84 total
                 
                 days.forEach(day => {
