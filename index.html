@@ -180,6 +180,17 @@
         .debug-panel h4 { margin-bottom: 5px; font-size: 12px; color: #856404; }
         .debug-item { margin-bottom: 3px; }
         .debug-key { color: #d63384; font-weight: bold; }
+        
+        .reset-info {
+            background: #fef5e7;
+            border: 1px solid #f6e05e;
+            color: #744210;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +207,10 @@
         <div class="debug-panel" id="debug-panel">
             <h4>🔧 Debug Info</h4>
             <div id="debug-content">Loading...</div>
+            <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="forceBookmarkSave()" style="background: #4299e1; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px;">🔖 Force Save</button>
+                <button onclick="quickExport()" style="background: #48bb78; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px;">📥 Export</button>
+            </div>
         </div>
 
         <div class="status-bar" id="status-bar">Starting up...</div>
@@ -273,647 +288,617 @@
         </div>
     </div>
 
-    <script>
-        // Simple week-based tracking
-        let currentWeekKey = '';
-        let currentDayName = '';
-        
-        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-        
-        const workouts = {
-            'Monday': { name: 'Back-Gym', exercises: ['30/side Bicycles', 'Chin-ups - 18', 'Chin-ups - 16', 'Chin-ups - 16', 'Knee tucks - 30', 'Shoulder blade - 20 lb', 'Shoulder blade - 20 lb', 'Bicep - 20 curls - 7.5lb', 'Bicep - 20 curls - 7.5lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
-            'Tuesday': { name: 'Core', exercises: ['Sprint', '20 Pilates swimmer', '30/side Bicycles', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Plank - 45 sec', 'Side plank - 30 sec', 'Side plank - 30 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
-            'Wednesday': { name: 'Chest-Gym', exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Incline pushups - 16', 'Incline pushups - 16', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
-            'Thursday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Fire Hydrant 1 min/ea', '30/side Bicycles', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
-            'Friday': { name: 'Shoulders-Gym', exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Squat/Overhead - 11 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Hamstrings - 25', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
-            'Saturday': { name: 'Active Recovery', exercises: ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'] },
-            'Sunday': { name: 'Rest Day', exercises: ['Gentle stretching', 'Walk', 'Light yoga'] }
+<script>
+// Global variables
+let currentWeekKey = '';
+let currentDayName = '';
+
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+const workouts = {
+    'Monday': { name: 'Back-Gym', exercises: ['30/side Bicycles', 'Chin-ups - 18', 'Chin-ups - 16', 'Chin-ups - 16', 'Knee tucks - 30', 'Shoulder blade - 20 lb', 'Shoulder blade - 20 lb', 'Bicep - 20 curls - 7.5lb', 'Bicep - 20 curls - 7.5lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
+    'Tuesday': { name: 'Core', exercises: ['Sprint', '20 Pilates swimmer', '30/side Bicycles', '20 Pilates swimmer', '30/side Bicycles', 'Knee tucks', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Plank - 45 sec', 'Plank - 45 sec', 'Side plank - 30 sec', 'Side plank - 30 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
+    'Wednesday': { name: 'Chest-Gym', exercises: ['30/side Bicycles', 'Incline pushups - 18', 'Incline pushups - 16', 'Incline pushups - 16', 'Knee tucks - 30', 'Bench - Side lift 15', 'Bench - Side lift 15', 'Bench - Push up 15', 'Bench - Push up 15', 'Bench - Overhead 15', 'Bench - Overhead 15', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
+    'Thursday': { name: 'Butt', exercises: ['30/side Bicycles', 'Fire Hydrant 1 min/ea', 'Fire Hydrant 1 min/ea', '30/side Bicycles', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Back bend pushups 5+', 'Leg lifts - 15', 'Lateral Cross 1 min/ea', 'Lateral Cross 1 min/ea', 'Plank - 45 sec', 'On side lift leg - 20', 'On side lift leg - 20', 'On side lift leg - 20'] },
+    'Friday': { name: 'Shoulders-Gym', exercises: ['30/side Bicycles', 'Squat/Side - 10 lb', 'Squat/Side - 10 lb', 'Knee tucks - 30', 'Squat/Front - 10 lb', 'Squat/Front - 10 lb', 'Squat/Overhead - 10 lb', 'Squat/Overhead - 11 lb', 'Cobra hold - 1 min', 'Back bend - 1 min', 'Hamstrings - 25', 'Hamstrings - 25', 'Leg lifts - 15', 'Hang', 'Wall Hand Stand'] },
+    'Saturday': { name: 'Active Recovery', exercises: ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'] },
+    'Sunday': { name: 'Rest Day', exercises: ['Gentle stretching', 'Walk', 'Light yoga'] }
+};
+
+const meals = {
+    'Monday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth', 
+        '11:00 AM: 1 c bone broth → eggs + watercress, raw onion, lemon; 1 tbsp olive oil; 1 tbsp balsamic',
+        '12:00 PM: unsweetened matcha',
+        '1 PM: 1 oz nuts (pistachios ~160 kcal or macadamias ~200 kcal)',
+        '5 PM: Bitters → salmon 5 oz; 1/4 c cooked-and-cooled potato; greens in coconut curry (≤1/4 c coconut milk); garlic + capers',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ],
+    'Tuesday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth',
+        '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
+        '12:00 PM: unsweetened matcha',
+        '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
+        '5 PM: Bitters → sardines 1 can over bitter greens + capers, parsley, lemon; 1/2 avocado; no starch',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ],
+    'Wednesday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth',
+        '10:00: 1 c bone broth → 1 c homemade L. reuteri yogurt (heavy cream + whole milk) + 1/4 c blueberries',
+        '12:00 PM: unsweetened matcha',
+        '1 PM: 1 oz beef or fattier cheese (pick cheese for more calories without carbs)',
+        '5 PM: Bitters → 2 eggs + garlic-sautéed greens w/ seaweed/dulse; salad: greens + raw onion + 6 cherry tomatoes + parsley or capers; lemon; 1 tbsp olive oil',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ],
+    'Thursday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth',
+        '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
+        '12:00 PM: unsweetened matcha',
+        '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
+        '5 PM: Bitters → sardines 1 can over bitter greens + capers, parsley, lemon; 1/2 avocado; no starch',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ],
+    'Friday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth',
+        '11:00: 1 c bone broth → 3 eggs + watercress, raw onion, lemon; 1 tbsp olive oil; 1 tbsp balsamic',
+        '12:00 PM: unsweetened matcha',
+        '1 PM: 1 oz nuts (pistachios ~160 kcal or macadamias ~200 kcal)',
+        '5 PM: Bitters → salmon 5 oz; 1/4 c cooked-and-cooled potato; greens in coconut curry (≤1/4 c coconut milk); garlic + capers',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ],
+    'Saturday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth',
+        'Meal 1 per chosen day',
+        '12:00 PM: unsweetened matcha',
+        'Snack per chosen day (1 oz nuts for Day1/Day2; or 1 oz beef/cheese if you run Day3-style)',
+        'Meal 2 per chosen day',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ],
+    'Sunday': [
+        '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
+        '10:30: 1 t. ACV in water → brush teeth',
+        '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
+        '12:00 PM: unsweetened matcha',
+        '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
+        '5 PM: Bitters → fish with greens + capers, parsley, lemon; 1/2 avocado; no starch',
+        '7 PM: Ginger, turmeric, pepper tea'
+    ]
+};
+
+const selfCareItems = [
+    'Dry brush',
+    'Coconut swish with baking soda rinse', 
+    'Breathing or Ohm\'s - 10 minutes (morning)',
+    'Cold shower',
+    'Meditation (post-workout)',
+    '8pm turn off internet & cell phone',
+    'Take magnesium',
+    'Breathing or Ohm\'s - 10 minutes (evening)',
+    'Meditation (evening)',
+    'Brush Ceci\'s teeth',
+    'Read',
+    'Castor oil on belly button'
+];
+
+function getCurrentWeekKey() {
+    const now = new Date();
+    const monday = new Date(now);
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    monday.setDate(diff);
+    monday.setHours(0, 0, 0, 0);
+    return monday.toISOString().split('T')[0];
+}
+
+function getCurrentDayName() {
+    const now = new Date();
+    const dayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1;
+    return days[dayIndex];
+}
+
+// Since localStorage IS working, let's just use that reliably
+function saveProgress() {
+    try {
+        const data = {
+            timestamp: Date.now(),
+            saved_date: new Date().toISOString(),
+            week_key: currentWeekKey,
+            day: currentDayName
         };
         
-        const meals = {
-            'Monday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth', 
-                '11:00 AM: 1 c bone broth → eggs + watercress, raw onion, lemon; 1 tbsp olive oil; 1 tbsp balsamic',
-                '12:00 PM: unsweetened matcha',
-                '1 PM: 1 oz nuts (pistachios ~160 kcal or macadamias ~200 kcal)',
-                '5 PM: Bitters → salmon 5 oz; 1/4 c cooked-and-cooled potato; greens in coconut curry (≤1/4 c coconut milk); garlic + capers',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ],
-            'Tuesday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth',
-                '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
-                '12:00 PM: unsweetened matcha',
-                '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
-                '5 PM: Bitters → sardines 1 can over bitter greens + capers, parsley, lemon; 1/2 avocado; no starch',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ],
-            'Wednesday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth',
-                '10:00: 1 c bone broth → 1 c homemade L. reuteri yogurt (heavy cream + whole milk) + 1/4 c blueberries',
-                '12:00 PM: unsweetened matcha',
-                '1 PM: 1 oz beef or fattier cheese (pick cheese for more calories without carbs)',
-                '5 PM: Bitters → 2 eggs + garlic-sautéed greens w/ seaweed/dulse; salad: greens + raw onion + 6 cherry tomatoes + parsley or capers; lemon; 1 tbsp olive oil',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ],
-            'Thursday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth',
-                '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
-                '12:00 PM: unsweetened matcha',
-                '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
-                '5 PM: Bitters → sardines 1 can over bitter greens + capers, parsley, lemon; 1/2 avocado; no starch',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ],
-            'Friday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth',
-                '11:00: 1 c bone broth → 3 eggs + watercress, raw onion, lemon; 1 tbsp olive oil; 1 tbsp balsamic',
-                '12:00 PM: unsweetened matcha',
-                '1 PM: 1 oz nuts (pistachios ~160 kcal or macadamias ~200 kcal)',
-                '5 PM: Bitters → salmon 5 oz; 1/4 c cooked-and-cooled potato; greens in coconut curry (≤1/4 c coconut milk); garlic + capers',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ],
-            'Saturday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth',
-                'Meal 1 per chosen day',
-                '12:00 PM: unsweetened matcha',
-                'Snack per chosen day (1 oz nuts for Day1/Day2; or 1 oz beef/cheese if you run Day3-style)',
-                'Meal 2 per chosen day',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ],
-            'Sunday': [
-                '8 AM: 24 oz salted, ACV, ginger, lemon water → baking soda brush teeth',
-                '10:30: 1 t. ACV in water → brush teeth',
-                '11:00: 1 c bone broth → beef + beet–arugula salad (≤1/2 c beets), raw onion, lemon; 1 tsp olive oil',
-                '12:00 PM: unsweetened matcha',
-                '1 PM: 1 oz nuts (pistachios if close to 1600; macadamias if you need more)',
-                '5 PM: Bitters → fish with greens + capers, parsley, lemon; 1/2 avocado; no starch',
-                '7 PM: Ginger, turmeric, pepper tea'
-            ]
-        };
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            const id = checkbox.getAttribute('data-id');
+            if (id && checkbox.checked) {
+                data[id] = true;
+            }
+        });
         
-        const selfCareItems = [
-            'Dry brush',
-            'Coconut swish with baking soda rinse', 
-            'Breathing or Ohm\'s - 10 minutes (morning)',
-            'Cold shower',
-            'Meditation (post-workout)',
-            '8pm turn off internet & cell phone',
-            'Take magnesium',
-            'Breathing or Ohm\'s - 10 minutes (evening)',
-            'Meditation (evening)',
-            'Brush Ceci\'s teeth',
-            'Read',
-            'Castor oil on belly button'
-        ];
-
-        // Get current week key (Monday-based weeks)
-        function getCurrentWeekKey() {
-            const now = new Date();
-            const monday = new Date(now);
-            const day = now.getDay();
-            const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
-            monday.setDate(diff);
-            monday.setHours(0, 0, 0, 0);
-            return monday.toISOString().split('T')[0];
-        }
-
-        function getCurrentDayName() {
-            const now = new Date();
-            const dayIndex = now.getDay() === 0 ? 6 : now.getDay() - 1; // Convert Sunday=0 to be 6
-            return days[dayIndex];
-        }
-
-        // Ultra-robust storage with multiple fallbacks
-        function saveProgress() {
-            try {
-                const timestamp = Date.now();
-                const dateStr = new Date().toISOString().split('T')[0];
-                
-                const data = {
-                    version: '2.0',
-                    timestamp: timestamp,
-                    saved_date: new Date().toISOString(),
-                    day_name: currentDayName,
-                    week_key: currentWeekKey,
-                    raw_date: dateStr
-                };
-                
-                // Collect all form data
-                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    const id = checkbox.getAttribute('data-id');
-                    if (id && checkbox.checked) {
-                        data[id] = true;
-                    }
-                });
-                
-                document.querySelectorAll('input[type="number"]').forEach(input => {
-                    const id = input.getAttribute('data-id');
-                    if (id && input.value) {
-                        data[id] = input.value;
-                    }
-                });
-                
-                const jsonData = JSON.stringify(data);
-                
-                // Store in multiple ways to increase reliability
-                try {
-                    // Method 1: Weekly storage
-                    localStorage.setItem(`power_habits_${currentWeekKey}`, jsonData);
-                    
-                    // Method 2: Daily storage
-                    localStorage.setItem(`power_habits_daily_${dateStr}`, jsonData);
-                    
-                    // Method 3: Day-specific storage
-                    localStorage.setItem(`power_habits_${currentDayName}_${dateStr}`, jsonData);
-                    
-                    // Method 4: Latest storage (always overwrites)
-                    localStorage.setItem('power_habits_latest', jsonData);
-                    
-                    // Method 5: Session backup
-                    sessionStorage.setItem('power_habits_session', jsonData);
-                    
-                    updateDebugInfo();
-                    updateStatus(`✅ Saved ${Object.keys(data).length} items (5 methods) at ${new Date().toLocaleTimeString()}`);
-                    
-                } catch (storageError) {
-                    // If localStorage fails, try sessionStorage only
-                    sessionStorage.setItem('power_habits_emergency', jsonData);
-                    updateStatus(`⚠️ localStorage failed, using session storage: ${storageError.message}`);
-                }
-                
-                return true;
-            } catch (e) {
-                updateStatus(`❌ Save completely failed: ${e.message}`);
-                return false;
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            const id = input.getAttribute('data-id');
+            if (id && input.value) {
+                data[id] = input.value;
             }
-        }
+        });
+        
+        localStorage.setItem(`power_habits_${currentWeekKey}`, JSON.stringify(data));
+        
+        // Also save daily backup
+        const today = new Date().toISOString().split('T')[0];
+        localStorage.setItem(`power_habits_backup_${today}`, JSON.stringify(data));
+        
+        const itemCount = Object.keys(data).filter(k => !['timestamp', 'saved_date', 'week_key', 'day'].includes(k)).length;
+        updateStatus(`✅ Saved ${itemCount} items to localStorage at ${new Date().toLocaleTimeString()}`);
+        updateDebugInfo();
+        
+    } catch (e) {
+        updateStatus(`❌ Save failed: ${e.message}`);
+    }
+}
 
-        function loadProgress() {
-            try {
-                const dateStr = new Date().toISOString().split('T')[0];
-                let data = null;
-                let source = '';
-                
-                // Try loading in order of preference
-                const attempts = [
-                    { key: `power_habits_${currentWeekKey}`, name: 'weekly', storage: localStorage },
-                    { key: `power_habits_daily_${dateStr}`, name: 'daily', storage: localStorage },
-                    { key: `power_habits_${currentDayName}_${dateStr}`, name: 'day-specific', storage: localStorage },
-                    { key: 'power_habits_latest', name: 'latest', storage: localStorage },
-                    { key: 'power_habits_session', name: 'session', storage: sessionStorage },
-                    { key: 'power_habits_emergency', name: 'emergency', storage: sessionStorage }
-                ];
-                
-                // Try yesterday's data if today's doesn't exist
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
-                attempts.push(
-                    { key: `power_habits_daily_${yesterdayStr}`, name: 'yesterday', storage: localStorage }
-                );
-                
-                for (const attempt of attempts) {
-                    try {
-                        const saved = attempt.storage.getItem(attempt.key);
-                        if (saved) {
-                            const parsed = JSON.parse(saved);
-                            // Verify it's recent data (within last 7 days)
-                            const savedTime = new Date(parsed.saved_date || 0);
-                            const now = new Date();
-                            const daysDiff = (now - savedTime) / (1000 * 60 * 60 * 24);
-                            
-                            if (daysDiff <= 7) {
-                                data = parsed;
-                                source = attempt.name;
-                                break;
-                            }
-                        }
-                    } catch (e) {
-                        continue; // Try next method
-                    }
-                }
-                
-                if (!data) {
-                    updateStatus('✨ No valid saved data found - fresh start!');
-                    updateDebugInfo();
-                    return false;
-                }
-                
-                // Restore the data
-                let loaded = 0;
-                Object.keys(data).forEach(id => {
-                    const element = document.querySelector(`[data-id="${id}"]`);
-                    if (element) {
-                        if (element.type === 'checkbox') {
-                            element.checked = true;
-                            loaded++;
-                        } else if (element.type === 'number') {
-                            element.value = data[id];
-                        }
-                    }
-                });
-                
-                updateProgress();
-                updateDebugInfo();
-                updateStatus(`📂 Loaded ${loaded} items from ${source} (saved: ${data.saved_date || 'unknown'})`);
-                return true;
-                
-            } catch (e) {
-                updateStatus(`❌ Load failed: ${e.message}`);
-                updateDebugInfo();
-                return false;
-            }
+function loadProgress() {
+    try {
+        let saved = localStorage.getItem(`power_habits_${currentWeekKey}`);
+        
+        if (!saved) {
+            const today = new Date().toISOString().split('T')[0];
+            saved = localStorage.getItem(`power_habits_backup_${today}`);
         }
-
-        function updateDebugInfo() {
-            try {
-                const debugDiv = document.getElementById('debug-content');
-                if (!debugDiv) return;
-                
-                const now = new Date();
-                const dateStr = now.toISOString().split('T')[0];
-                
-                let html = `
-                    <div class="debug-item">📅 <span class="debug-key">Date:</span> ${now.toDateString()}</div>
-                    <div class="debug-item">🗓️ <span class="debug-key">Day:</span> ${currentDayName}</div>
-                    <div class="debug-item">🔑 <span class="debug-key">Week Key:</span> ${currentWeekKey}</div>
-                `;
-                
-                // Check all storage methods
-                const storageChecks = [
-                    { key: `power_habits_${currentWeekKey}`, name: 'Weekly', storage: localStorage },
-                    { key: `power_habits_daily_${dateStr}`, name: 'Daily', storage: localStorage },
-                    { key: `power_habits_${currentDayName}_${dateStr}`, name: 'Day-specific', storage: localStorage },
-                    { key: 'power_habits_latest', name: 'Latest', storage: localStorage },
-                    { key: 'power_habits_session', name: 'Session', storage: sessionStorage }
-                ];
-                
-                storageChecks.forEach(check => {
-                    try {
-                        const exists = check.storage.getItem(check.key);
-                        const status = exists ? '✅ YES' : '❌ NO';
-                        html += `<div class="debug-item">💾 <span class="debug-key">${check.name}:</span> ${status}</div>`;
-                        
-                        if (exists) {
-                            try {
-                                const data = JSON.parse(exists);
-                                const itemCount = Object.keys(data).filter(k => k.startsWith('ex_') || k.startsWith('meal_') || k.startsWith('care_') || k.startsWith('opt_')).length;
-                                html += `<div class="debug-item" style="margin-left: 15px;">📊 ${itemCount} items, saved: ${data.saved_date || 'unknown'}</div>`;
-                            } catch (e) {
-                                html += `<div class="debug-item" style="margin-left: 15px;">❌ Parse error</div>`;
-                            }
-                        }
-                    } catch (e) {
-                        html += `<div class="debug-item">💾 <span class="debug-key">${check.name}:</span> ❌ ERROR</div>`;
-                    }
-                });
-                
-                // Storage quota info
-                if (navigator.storage && navigator.storage.estimate) {
-                    navigator.storage.estimate().then(estimate => {
-                        const used = Math.round((estimate.usage || 0) / 1024);
-                        const quota = Math.round((estimate.quota || 0) / 1024 / 1024);
-                        const debugDiv = document.getElementById('debug-content');
-                        if (debugDiv) {
-                            debugDiv.innerHTML += `<div class="debug-item">💿 <span class="debug-key">Storage:</span> ${used}KB used of ${quota}MB</div>`;
-                        }
-                    });
-                }
-                
-                debugDiv.innerHTML = html;
-            } catch (e) {
-                console.error('Debug update failed:', e);
-            }
-        }
-
-        function updateStatus(message) {
-            document.getElementById('status-bar').textContent = message;
-        }
-
-        function updateWeekInfo() {
-            const now = new Date();
-            const weekStart = new Date(currentWeekKey);
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-            
-            const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            document.getElementById('week-info').textContent = 
-                `Week of ${formatDate(weekStart)} - ${formatDate(weekEnd)} • Today is ${currentDayName}`;
-        }
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function createTodayPage() {
-            const container = document.getElementById('today-content');
-            const workout = workouts[currentDayName];
-            
-            document.getElementById('today-title').textContent = `${currentDayName} • ${workout.name}`;
-            
-            let content = '';
-            
-            // Exercise section
-            if (workout.exercises.length > 0) {
-                content += `
-                    <div class="day-card">
-                        <div class="day-header exercise-header">💪 Exercise • ${workout.name}</div>
-                        <div class="day-content">
-                            <div class="section">
-                                <h4>Core Workout</h4>
-                `;
-                
-                workout.exercises.forEach((exercise, i) => {
-                    content += `
-                        <div class="item">
-                            <input type="checkbox" data-id="ex_${currentDayName}_${i}" onchange="saveProgress()">
-                            <span class="item-text">${exercise}</span>
-                        </div>
-                    `;
-                });
-                
-                content += `
-                            </div>
-                            <div class="section">
-                                <h4>Optional Activities</h4>
-                `;
-                
-                const optionalActivities = ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'];
-                optionalActivities.forEach((activity, i) => {
-                    content += `
-                        <div class="item">
-                            <input type="checkbox" data-id="opt_${currentDayName}_${i}" onchange="saveProgress()">
-                            <span class="item-text">${activity}</span>
-                        </div>
-                    `;
-                });
-                
-                content += `
-                            </div>
-                            <div class="input-group">
-                                <label>Steps Goal: 5,000</label>
-                                <input type="number" data-id="steps_${currentDayName}" placeholder="Enter steps" onchange="saveProgress()">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Nutrition section
-            const dayMeals = meals[currentDayName] || [];
-            content += `
-                <div class="day-card">
-                    <div class="day-header nutrition-header">🥗 Nutrition</div>
-                    <div class="day-content">
-                        <div class="input-group">
-                            <label>Blood Glucose (mg/dL)</label>
-                            <input type="number" data-id="glucose_${currentDayName}" step="0.1" onchange="saveProgress()">
-                        </div>
-                        <div class="input-group">
-                            <label>Ketones (mmol/L)</label>
-                            <input type="number" data-id="ketones_${currentDayName}" step="0.1" onchange="saveProgress()">
-                        </div>
-            `;
-            
-            dayMeals.forEach((meal, i) => {
-                content += `
-                    <div class="item">
-                        <input type="checkbox" data-id="meal_${currentDayName}_${i}" onchange="saveProgress()">
-                        <span class="item-text">${meal}</span>
-                    </div>
-                `;
-            });
-            
-            content += `
-                    </div>
-                    
-                    <div class="input-group">
-                        <label>Total Calories</label>
-                        <input type="number" data-id="total_calories_${currentDayName}" placeholder="Enter total calories" onchange="saveProgress()">
-                    </div>
-                    <div class="input-group">
-                        <label>Total Net Carbs (grams)</label>
-                        <input type="number" data-id="total_carbs_${currentDayName}" placeholder="Enter net carbs" onchange="saveProgress()">
-                    </div>
-                </div>
-            `;
-            
-            // Meditation section
-            content += `
-                <div class="day-card">
-                    <div class="day-header meditation-header">🧘 Meditation</div>
-                    <div class="day-content">
-                        <div class="meditation-grid">
-                            <div class="meditation-item">
-                                <h4>🌅 Morning</h4>
-                                <input type="number" data-id="med_morning_${currentDayName}" min="0" onchange="saveProgress()"> min
-                            </div>
-                            <div class="meditation-item">
-                                <h4>🌙 Evening</h4>
-                                <input type="number" data-id="med_evening_${currentDayName}" min="0" onchange="saveProgress()"> min
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Self Care section
-            content += `
-                <div class="day-card">
-                    <div class="day-header selfcare-header">💆 Self Care</div>
-                    <div class="day-content">
-            `;
-            
-            selfCareItems.forEach((item, i) => {
-                content += `
-                    <div class="item">
-                        <input type="checkbox" data-id="care_${currentDayName}_${i}" onchange="saveProgress()">
-                        <span class="item-text">${item}</span>
-                    </div>
-                `;
-            });
-            
-            content += `
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = content;
-        }
-
-        function createWeekPage() {
-            const container = document.getElementById('week-content');
-            let content = '';
-            
-            days.forEach(day => {
-                const workout = workouts[day];
-                const isToday = day === currentDayName;
-                const totalExerciseItems = workout.exercises.length + 4; // +4 for optional activities
-                
-                content += `
-                    <div class="day-card">
-                        <div class="day-header exercise-header">
-                            ${day} • ${workout.name} ${isToday ? '(Today)' : ''}
-                        </div>
-                        <div class="day-content">
-                            <div class="section">
-                                <h4>Quick Stats</h4>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
-                                    <div>💪 Exercise: <span id="exercise_${day}_summary">0</span>/${totalExerciseItems}</div>
-                                    <div>🥗 Nutrition: <span id="nutrition_${day}_summary">0</span>/${meals[day] ? meals[day].length : 7}</div>
-                                    <div>💆 Self Care: <span id="selfcare_${day}_summary">0</span>/${selfCareItems.length}</div>
-                                    <div>🧘 Meditation: <span id="meditation_${day}_summary">0</span> min</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = content;
-        }
-
-        function updateProgress() {
-            setTimeout(() => {
-                // Update visual states
-                document.querySelectorAll('.item').forEach(item => {
-                    const checkbox = item.querySelector('input[type="checkbox"]');
-                    if (checkbox && checkbox.checked) {
-                        item.classList.add('completed');
-                    } else {
-                        item.classList.remove('completed');
-                    }
-                });
-                
-                // Calculate today's stats
-                const todayExercise = document.querySelectorAll(`input[data-id^="ex_${currentDayName}"], input[data-id^="opt_${currentDayName}"]`);
-                const todayNutrition = document.querySelectorAll(`input[data-id^="meal_${currentDayName}"]`);
-                const todaySelfcare = document.querySelectorAll(`input[data-id^="care_${currentDayName}"]`);
-                
-                const todayExerciseCount = Array.from(todayExercise).filter(cb => cb.checked).length;
-                const todayNutritionCount = Array.from(todayNutrition).filter(cb => cb.checked).length;
-                const todaySelftareCount = Array.from(todaySelfcare).filter(cb => cb.checked).length;
-                
-                // Calculate today's meditation minutes
-                const morningMed = document.querySelector(`input[data-id="med_morning_${currentDayName}"]`);
-                const eveningMed = document.querySelector(`input[data-id="med_evening_${currentDayName}"]`);
-                const todayMeditationMinutes = (parseInt(morningMed?.value || 0)) + (parseInt(eveningMed?.value || 0));
-                
-                // Update today's progress bar (based on total completion)
-                const todayTotal = todayExercise.length + todayNutrition.length + todaySelfcare.length;
-                const todayCompleted = todayExerciseCount + todayNutritionCount + todaySelftareCount;
-                const todayPercent = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
-                document.getElementById('today-progress').style.width = todayPercent + '%';
-                
-                // Update today's stats
-                document.getElementById('today-exercise').textContent = `${todayExerciseCount}/${todayExercise.length}`;
-                document.getElementById('today-nutrition').textContent = `${todayNutritionCount}/${todayNutrition.length}`;
-                document.getElementById('today-selfcare').textContent = `${todaySelftareCount}/${todaySelfcare.length}`;
-                document.getElementById('today-meditation').textContent = todayMeditationMinutes;
-                
-                // Calculate weekly stats with correct totals
-                let weekExerciseCompleted = 0;
-                let weekNutritionCompleted = 0;
-                let weekSelfcareCompleted = 0;
-                let weekMeditationMinutes = 0;
-                let weekTotalCalories = 0;
-                let weekTotalCarbs = 0;
-                
-                // Calculate actual totals based on updated data structure
-                const weekExerciseTotal = (14 + 4) + (17 + 4) + (16 + 4) + (14 + 4) + (15 + 4) + (4 + 4) + (3 + 4); // Each day's core exercises + 4 optional activities
-                const weekNutritionTotal = 7 + 7 + 7 + 7 + 7 + 7 + 7; // 7 nutrition items per day = 49 total
-                const weekSelfcareTotal = 7 * 12; // 7 days * 12 self care items = 84 total
-                
-                days.forEach(day => {
-                    // Exercise counts (core + optional)
-                    const exerciseItems = document.querySelectorAll(`input[data-id^="ex_${day}"], input[data-id^="opt_${day}"]`);
-                    const exerciseCompleted = Array.from(exerciseItems).filter(cb => cb.checked).length;
-                    weekExerciseCompleted += exerciseCompleted;
-                    
-                    // Nutrition counts
-                    const nutritionItems = document.querySelectorAll(`input[data-id^="meal_${day}"]`);
-                    const nutritionCompleted = Array.from(nutritionItems).filter(cb => cb.checked).length;
-                    weekNutritionCompleted += nutritionCompleted;
-                    
-                    // Self care counts
-                    const selfcareItems = document.querySelectorAll(`input[data-id^="care_${day}"]`);
-                    const selfcareCompleted = Array.from(selfcareItems).filter(cb => cb.checked).length;
-                    weekSelfcareCompleted += selfcareCompleted;
-                    
-                    // Meditation minutes
-                    const dayMorningMed = document.querySelector(`input[data-id="med_morning_${day}"]`);
-                    const dayEveningMed = document.querySelector(`input[data-id="med_evening_${day}"]`);
-                    const dayMeditation = (parseInt(dayMorningMed?.value || 0)) + (parseInt(dayEveningMed?.value || 0));
-                    weekMeditationMinutes += dayMeditation;
-                    
-                    // Total calories and carbs
-                    const dayCalories = document.querySelector(`input[data-id="total_calories_${day}"]`);
-                    const dayCarbs = document.querySelector(`input[data-id="total_carbs_${day}"]`);
-                    weekTotalCalories += parseInt(dayCalories?.value || 0);
-                    weekTotalCarbs += parseInt(dayCarbs?.value || 0);
-                    
-                    // Update individual day summaries in week view
-                    const exerciseSummary = document.getElementById(`exercise_${day}_summary`);
-                    const nutritionSummary = document.getElementById(`nutrition_${day}_summary`);
-                    const selfcareSummary = document.getElementById(`selfcare_${day}_summary`);
-                    const meditationSummary = document.getElementById(`meditation_${day}_summary`);
-                    
-                    if (exerciseSummary) exerciseSummary.textContent = exerciseCompleted;
-                    if (nutritionSummary) nutritionSummary.textContent = nutritionCompleted;
-                    if (selfcareSummary) selfcareSummary.textContent = selfcareCompleted;
-                    if (meditationSummary) meditationSummary.textContent = dayMeditation;
-                });
-                
-                // Update week progress bar (based on total completion)
-                const weekTotal = weekExerciseTotal + weekNutritionTotal + weekSelfcareTotal;
-                const weekCompleted = weekExerciseCompleted + weekNutritionCompleted + weekSelfcareCompleted;
-                const weekPercent = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
-                document.getElementById('week-progress').style.width = weekPercent + '%';
-                
-                // Update weekly stats with correct totals
-                document.getElementById('week-exercise').textContent = `${weekExerciseCompleted}/${weekExerciseTotal}`;
-                document.getElementById('week-nutrition').textContent = `${weekNutritionCompleted}/${weekNutritionTotal}`;
-                document.getElementById('week-selfcare').textContent = `${weekSelfcareCompleted}/${weekSelfcareTotal}`;
-                document.getElementById('week-meditation').textContent = weekMeditationMinutes;
-                document.getElementById('week-calories').textContent = weekTotalCalories;
-                document.getElementById('week-carbs').textContent = weekTotalCarbs;
-            }, 50);
-        }
-
-        // Initialize everything with better debugging
-        document.addEventListener('DOMContentLoaded', function() {
-            currentWeekKey = getCurrentWeekKey();
-            currentDayName = getCurrentDayName();
-            
-            updateWeekInfo();
+        
+        if (!saved) {
+            updateStatus('✨ No saved data - fresh start!');
             updateDebugInfo();
-            createTodayPage();
-            createWeekPage();
-            
-            setTimeout(() => {
-                loadProgress();
-            }, 200);
-        });
-
-        // Save more frequently and on more events
-        window.addEventListener('beforeunload', saveProgress);
-        window.addEventListener('pagehide', saveProgress);
-        window.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                saveProgress();
+            return;
+        }
+        
+        const data = JSON.parse(saved);
+        let loaded = 0;
+        
+        Object.keys(data).forEach(id => {
+            const element = document.querySelector(`[data-id="${id}"]`);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = true;
+                    loaded++;
+                } else if (element.type === 'number') {
+                    element.value = data[id];
+                }
             }
         });
         
-        // Auto-save every 30 seconds
-        setInterval(saveProgress, 30000);
-    </script>
+        updateProgress();
+        updateStatus(`📂 Loaded ${loaded} items from localStorage`);
+        updateDebugInfo();
+        
+    } catch (e) {
+        updateStatus(`❌ Load failed: ${e.message}`);
+        updateDebugInfo();
+    }
+}
+
+function forceBookmarkSave() {
+    saveProgress();
+    updateStatus('🔖 Forced save to localStorage - your data should persist!');
+}
+
+function quickExport() {
+    try {
+        const data = {};
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            const id = checkbox.getAttribute('data-id');
+            if (id && checkbox.checked) {
+                data[id] = true;
+            }
+        });
+        
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            const id = input.getAttribute('data-id');
+            if (id && input.value) {
+                data[id] = input.value;
+            }
+        });
+        
+        const exportData = {
+            date: new Date().toISOString(),
+            week_key: currentWeekKey,
+            day: currentDayName,
+            data: data
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `power-habits-${currentDayName}-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        updateStatus('📥 Progress exported as backup file');
+    } catch (e) {
+        updateStatus(`❌ Export failed: ${e.message}`);
+    }
+}
+
+function updateStatus(message) {
+    const statusEl = document.getElementById('status-bar');
+    if (statusEl) statusEl.textContent = message;
+}
+
+function updateDebugInfo() {
+    try {
+        const debugDiv = document.getElementById('debug-content');
+        if (!debugDiv) return;
+        
+        const now = new Date();
+        const hasLocalStorage = !!localStorage.getItem(`power_habits_${currentWeekKey}`);
+        
+        let html = `
+            <div class="debug-item">📅 <span class="debug-key">Date:</span> ${now.toDateString()}</div>
+            <div class="debug-item">🗓️ <span class="debug-key">Day:</span> ${currentDayName}</div>
+            <div class="debug-item">🔑 <span class="debug-key">Week Key:</span> ${currentWeekKey}</div>
+            <div class="debug-item">💾 <span class="debug-key">localStorage:</span> ${hasLocalStorage ? '✅ YES' : '❌ NO'}</div>
+        `;
+        
+        if (hasLocalStorage) {
+            try {
+                const stored = localStorage.getItem(`power_habits_${currentWeekKey}`);
+                const data = JSON.parse(stored);
+                const itemCount = Object.keys(data).filter(k => !['timestamp', 'saved_date', 'week_key', 'day'].includes(k)).length;
+                html += `<div class="debug-item">📊 <span class="debug-key">Stored Items:</span> ${itemCount}</div>`;
+                html += `<div class="debug-item">⏰ <span class="debug-key">Last Saved:</span> ${data.saved_date || 'unknown'}</div>`;
+            } catch (e) {
+                html += `<div class="debug-item">❌ <span class="debug-key">Parse Error:</span> ${e.message}</div>`;
+            }
+        }
+        
+        debugDiv.innerHTML = html;
+    } catch (e) {
+        console.error('Debug update failed:', e);
+    }
+}
+
+function updateWeekInfo() {
+    const now = new Date();
+    const weekStart = new Date(currentWeekKey);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const weekInfoEl = document.getElementById('week-info');
+    if (weekInfoEl) {
+        weekInfoEl.textContent = `Week of ${formatDate(weekStart)} - ${formatDate(weekEnd)} • Today is ${currentDayName}`;
+    }
+}
+
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function createTodayPage() {
+    const container = document.getElementById('today-content');
+    const workout = workouts[currentDayName];
+    
+    const titleEl = document.getElementById('today-title');
+    if (titleEl) titleEl.textContent = `${currentDayName} • ${workout.name}`;
+    
+    let content = '';
+    
+    // Exercise section
+    if (workout.exercises.length > 0) {
+        content += `
+            <div class="day-card">
+                <div class="day-header exercise-header">💪 Exercise • ${workout.name}</div>
+                <div class="day-content">
+                    <div class="section">
+                        <h4>Core Workout</h4>
+        `;
+        
+        workout.exercises.forEach((exercise, i) => {
+            content += `
+                <div class="item">
+                    <input type="checkbox" data-id="ex_${currentDayName}_${i}" onchange="saveProgress()">
+                    <span class="item-text">${exercise}</span>
+                </div>
+            `;
+        });
+        
+        content += `
+                    </div>
+                    <div class="section">
+                        <h4>Optional Activities</h4>
+        `;
+        
+        const optionalActivities = ['5-10 Sprints (35 cal)', 'Hiking 1-1.5 hrs (270 cal)', 'Stand-up Paddle (200 cal)', 'Swimming/Snorkeling (175 cal)'];
+        optionalActivities.forEach((activity, i) => {
+            content += `
+                <div class="item">
+                    <input type="checkbox" data-id="opt_${currentDayName}_${i}" onchange="saveProgress()">
+                    <span class="item-text">${activity}</span>
+                </div>
+            `;
+        });
+        
+        content += `
+                    </div>
+                    <div class="input-group">
+                        <label>Steps Goal: 5,000</label>
+                        <input type="number" data-id="steps_${currentDayName}" placeholder="Enter steps" onchange="saveProgress()">
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Nutrition section
+    const dayMeals = meals[currentDayName] || [];
+    content += `
+        <div class="day-card">
+            <div class="day-header nutrition-header">🥗 Nutrition</div>
+            <div class="day-content">
+                <div class="input-group">
+                    <label>Blood Glucose (mg/dL)</label>
+                    <input type="number" data-id="glucose_${currentDayName}" step="0.1" onchange="saveProgress()">
+                </div>
+                <div class="input-group">
+                    <label>Ketones (mmol/L)</label>
+                    <input type="number" data-id="ketones_${currentDayName}" step="0.1" onchange="saveProgress()">
+                </div>
+    `;
+    
+    dayMeals.forEach((meal, i) => {
+        content += `
+            <div class="item">
+                <input type="checkbox" data-id="meal_${currentDayName}_${i}" onchange="saveProgress()">
+                <span class="item-text">${meal}</span>
+            </div>
+        `;
+    });
+    
+    content += `
+                <div class="input-group">
+                    <label>Total Calories</label>
+                    <input type="number" data-id="total_calories_${currentDayName}" placeholder="Enter total calories" onchange="saveProgress()">
+                </div>
+                <div class="input-group">
+                    <label>Total Net Carbs (grams)</label>
+                    <input type="number" data-id="total_carbs_${currentDayName}" placeholder="Enter net carbs" onchange="saveProgress()">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Meditation section
+    content += `
+        <div class="day-card">
+            <div class="day-header meditation-header">🧘 Meditation</div>
+            <div class="day-content">
+                <div class="meditation-grid">
+                    <div class="meditation-item">
+                        <h4>🌅 Morning</h4>
+                        <input type="number" data-id="med_morning_${currentDayName}" min="0" onchange="saveProgress()"> min
+                    </div>
+                    <div class="meditation-item">
+                        <h4>🌙 Evening</h4>
+                        <input type="number" data-id="med_evening_${currentDayName}" min="0" onchange="saveProgress()"> min
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Self Care section
+    content += `
+        <div class="day-card">
+            <div class="day-header selfcare-header">💆 Self Care</div>
+            <div class="day-content">
+    `;
+    
+    selfCareItems.forEach((item, i) => {
+        content += `
+            <div class="item">
+                <input type="checkbox" data-id="care_${currentDayName}_${i}" onchange="saveProgress()">
+                <span class="item-text">${item}</span>
+            </div>
+        `;
+    });
+    
+    content += `
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = content;
+}
+
+function createWeekPage() {
+    const container = document.getElementById('week-content');
+    let content = '';
+    
+    days.forEach(day => {
+        const workout = workouts[day];
+        const isToday = day === currentDayName;
+        const totalExerciseItems = workout.exercises.length + 4; // +4 for optional activities
+        
+        content += `
+            <div class="day-card">
+                <div class="day-header exercise-header">
+                    ${day} • ${workout.name} ${isToday ? '(Today)' : ''}
+                </div>
+                <div class="day-content">
+                    <div class="section">
+                        <h4>Quick Stats</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+                            <div>💪 Exercise: <span id="exercise_${day}_summary">0</span>/${totalExerciseItems}</div>
+                            <div>🥗 Nutrition: <span id="nutrition_${day}_summary">0</span>/${meals[day] ? meals[day].length : 7}</div>
+                            <div>💆 Self Care: <span id="selfcare_${day}_summary">0</span>/${selfCareItems.length}</div>
+                            <div>🧘 Meditation: <span id="meditation_${day}_summary">0</span> min</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = content;
+}
+
+function updateProgress() {
+    setTimeout(() => {
+        // Update visual states
+        document.querySelectorAll('.item').forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox && checkbox.checked) {
+                item.classList.add('completed');
+            } else {
+                item.classList.remove('completed');
+            }
+        });
+        
+        // Calculate today's stats
+        const todayExercise = document.querySelectorAll(`input[data-id^="ex_${currentDayName}"], input[data-id^="opt_${currentDayName}"]`);
+        const todayNutrition = document.querySelectorAll(`input[data-id^="meal_${currentDayName}"]`);
+        const todaySelfcare = document.querySelectorAll(`input[data-id^="care_${currentDayName}"]`);
+        
+        const todayExerciseCount = Array.from(todayExercise).filter(cb => cb.checked).length;
+        const todayNutritionCount = Array.from(todayNutrition).filter(cb => cb.checked).length;
+        const todaySelftareCount = Array.from(todaySelfcare).filter(cb => cb.checked).length;
+        
+        // Calculate today's meditation minutes
+        const morningMed = document.querySelector(`input[data-id="med_morning_${currentDayName}"]`);
+        const eveningMed = document.querySelector(`input[data-id="med_evening_${currentDayName}"]`);
+        const todayMeditationMinutes = (parseInt(morningMed?.value || 0)) + (parseInt(eveningMed?.value || 0));
+        
+        // Update today's progress bar (based on total completion)
+        const todayTotal = todayExercise.length + todayNutrition.length + todaySelfcare.length;
+        const todayCompleted = todayExerciseCount + todayNutritionCount + todaySelftareCount;
+        const todayPercent = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+        const todayProgressEl = document.getElementById('today-progress');
+        if (todayProgressEl) todayProgressEl.style.width = todayPercent + '%';
+        
+        // Update today's stats
+        const todayExerciseEl = document.getElementById('today-exercise');
+        const todayNutritionEl = document.getElementById('today-nutrition');
+        const todaySelfcareEl = document.getElementById('today-selfcare');
+        const todayMeditationEl = document.getElementById('today-meditation');
+        
+        if (todayExerciseEl) todayExerciseEl.textContent = `${todayExerciseCount}/${todayExercise.length}`;
+        if (todayNutritionEl) todayNutritionEl.textContent = `${todayNutritionCount}/${todayNutrition.length}`;
+        if (todaySelfcareEl) todaySelfcareEl.textContent = `${todaySelftareCount}/${todaySelfcare.length}`;
+        if (todayMeditationEl) todayMeditationEl.textContent = todayMeditationMinutes;
+        
+        // Calculate weekly stats
+        let weekExerciseCompleted = 0;
+        let weekNutritionCompleted = 0;
+        let weekSelfcareCompleted = 0;
+        let weekMeditationMinutes = 0;
+        let weekTotalCalories = 0;
+        let weekTotalCarbs = 0;
+        
+        const weekExerciseTotal = (14 + 4) + (17 + 4) + (16 + 4) + (14 + 4) + (15 + 4) + (4 + 4) + (3 + 4);
+        const weekNutritionTotal = 7 + 7 + 7 + 7 + 7 + 7 + 7;
+        const weekSelfcareTotal = 7 * 12;
+        
+        days.forEach(day => {
+            // Exercise counts (core + optional)
+            const exerciseItems = document.querySelectorAll(`input[data-id^="ex_${day}"], input[data-id^="opt_${day}"]`);
+            const exerciseCompleted = Array.from(exerciseItems).filter(cb => cb.checked).length;
+            weekExerciseCompleted += exerciseCompleted;
+            
+            // Nutrition counts
+            const nutritionItems = document.querySelectorAll(`input[data-id^="meal_${day}"]`);
+            const nutritionCompleted = Array.from(nutritionItems).filter(cb => cb.checked).length;
+            weekNutritionCompleted += nutritionCompleted;
+            
+            // Self care counts
+            const selfcareItems = document.querySelectorAll(`input[data-id^="care_${day}"]`);
+            const selfcareCompleted = Array.from(selfcareItems).filter(cb => cb.checked).length;
+            weekSelfcareCompleted += selfcareCompleted;
+            
+            // Meditation minutes
+            const dayMorningMed = document.querySelector(`input[data-id="med_morning_${day}"]`);
+            const dayEveningMed = document.querySelector(`input[data-id="med_evening_${day}"]`);
+            const dayMeditation = (parseInt(dayMorningMed?.value || 0)) + (parseInt(dayEveningMed?.value || 0));
+            weekMeditationMinutes += dayMeditation;
+            
+            // Total calories and carbs
+            const dayCalories = document.querySelector(`input[data-id="total_calories_${day}"]`);
+            const dayCarbs = document.querySelector(`input[data-id="total_carbs_${day}"]`);
+            weekTotalCalories += parseInt(dayCalories?.value || 0);
+            weekTotalCarbs += parseInt(dayCarbs?.value || 0);
+            
+            // Update individual day summaries in week view
+            const exerciseSummary = document.getElementById(`exercise_${day}_summary`);
+            const nutritionSummary = document.getElementById(`nutrition_${day}_summary`);
+            const selfcareSummary = document.getElementById(`selfcare_${day}_summary`);
+            const meditationSummary = document.getElementById(`meditation_${day}_summary`);
+            
+            if (exerciseSummary) exerciseSummary.textContent = exerciseCompleted;
+            if (nutritionSummary) nutritionSummary.textContent = nutritionCompleted;
+            if (selfcareSummary) selfcareSummary.textContent = selfcareCompleted;
+            if (meditationSummary) meditationSummary.textContent = dayMeditation;
+        });
+        
+        // Update week progress bar
+        const weekTotal = weekExerciseTotal + weekNutritionTotal + weekSelfcareTotal;
+        const weekCompleted = weekExerciseCompleted + weekNutritionCompleted + weekSelfcareCompleted;
+        const weekPercent = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+        const weekProgressEl = document.getElementById('week-progress');
+        if (weekProgressEl) weekProgressEl.style.width = weekPercent + '%';
+        
+        // Update weekly stats
+        const weekExerciseEl = document.getElementById('week-exercise');
+        const weekNutritionEl = document.getElementById('week-nutrition');
+        const weekSelfcareEl = document.getElementById('week-selfcare');
+        const weekMeditationEl = document.getElementById('week-meditation');
+        const weekCaloriesEl = document.getElementById('week-calories');
+        const weekCarbsEl = document.getElementById('week-carbs');
+        
+        if (weekExerciseEl) weekExerciseEl.textContent = `${weekExerciseCompleted}/${weekExerciseTotal}`;
+        if (weekNutritionEl) weekNutritionEl.textContent = `${weekNutritionCompleted}/${weekNutritionTotal}`;
+        if (weekSelfcareEl) weekSelfcareEl.textContent = `${weekSelfcareCompleted}/${weekSelfcareTotal}`;
+        if (weekMeditationEl) weekMeditationEl.textContent = weekMeditationMinutes;
+        if (weekCaloriesEl) weekCaloriesEl.textContent = weekTotalCalories;
+        if (weekCarbsEl) weekCarbsEl.textContent = weekTotalCarbs;
+    }, 50);
+}
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+    currentWeekKey = getCurrentWeekKey();
+    currentDayName = getCurrentDayName();
+    
+    updateWeekInfo();
+    updateDebugInfo();
+    createTodayPage();
+    createWeekPage();
+    
+    setTimeout(() => {
+        loadProgress();
+    }, 200);
+});
+
+// Auto-save on various events
+window.addEventListener('beforeunload', saveProgress);
+window.addEventListener('pagehide', saveProgress);
+window.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        saveProgress();
+    }
+});
+
+// Auto-save every 30 seconds
+setInterval(saveProgress, 30000);
+</script>
 </body>
 </html>
